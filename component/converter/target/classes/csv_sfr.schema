@@ -1,0 +1,1 @@
+message csv_sfr{required binary prenom; required binary nom; required binary ecole;}
