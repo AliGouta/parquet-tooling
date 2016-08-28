@@ -13,8 +13,44 @@
         <module>services</module>
     </modules>
 
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <source>1.8</source>
+                    <target>1.8</target>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
 
     <dependencies>
+        <dependency>
+            <groupId>org.apache.spark</groupId>
+            <artifactId>spark-core_2.10</artifactId>
+            <version>2.0.0</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.spark</groupId>
+            <artifactId>spark-sql_2.10</artifactId>
+            <version>2.0.0</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <version>1.16.10</version>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/org.assertj/assertj-core -->
+        <dependency>
+            <groupId>org.assertj</groupId>
+            <artifactId>assertj-core</artifactId>
+            <version>3.5.2</version>
+        </dependency>
+
+
         <dependency>
             <groupId>com.beust</groupId>
             <artifactId>jcommander</artifactId>
@@ -25,21 +61,18 @@
             <groupId>com.twitter</groupId>
             <artifactId>parquet-column</artifactId>
             <version>1.6.0</version>
-            <scope>test</scope>
         </dependency>
 
         <dependency>
             <groupId>com.twitter</groupId>
             <artifactId>parquet-hadoop</artifactId>
             <version>1.6.0</version>
-            <scope>test</scope>
         </dependency>
 
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
             <version>4.10</version>
-            <scope>test</scope>
         </dependency>
     </dependencies>
 

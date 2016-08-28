@@ -1,0 +1,81 @@
+To join 2v-rx:
+
+/*
+Dataset<Row> sqlDF = spark.sql("SELECT ondemand_session_id_2v, count(ondemand_session_id_2v) as number " +
+                 "From (" +
+                 "SELECT rx.date as date_rx, 2v.date as date_2v, 2v.ondemand_session_id as ondemand_session_id_2v, " +
+                 "2v.code_http as code_http_2v, rx.bitrate as bitrate_rx, rx.service_group as service_group_rx, rx.ip_rfgw as ip_rfgw_rx, " +
+                 "rx.port_rfgw as port_rfgw_rx, rx.mode as mode_rx " +
+                 "FROM srmRessource2v2cModel 2v " +
+                 "LEFT JOIN usrm_vermserver_rx rx " +
+                 "ON rx.ondemand_session_id = 2v.ondemand_session_id and rx.bitrate is not null " +
+                 ") jointure " +
+                 "Group BY ondemand_session_id_2v " +
+                 "ORDER BY number DESC");
+ */
+
+To join 2v-rx-tx:
+
+         Dataset<Row> sqlDF = spark.sql("SELECT ondemand_session_id_2v, count(ondemand_session_id_2v) as number " +
+                 "From (" +
+                 "SELECT rx.date as date_rx, 2v.date as date_2v, 2v.ondemand_session_id as ondemand_session_id_2v, " +
+                 "2v.code_http as code_http_2v, rx.bitrate as bitrate_rx, rx.service_group as service_group_rx, rx.ip_rfgw as ip_rfgw_rx, " +
+                 "rx.port_rfgw as port_rfgw_rx, rx.mode as mode_rx " +
+                 "FROM srmRessource2v2cModel 2v " +
+                 "LEFT JOIN usrm_vermserver_rx rx " +
+                 "ON rx.ondemand_session_id = 2v.ondemand_session_id and rx.bitrate is not null " +
+                 "LEFT JOIN usrm_vermserver_tx tx " +
+                 "ON rx.ondemand_session_id = tx.ondemand_session_id and tx.code != \"teardown_or_ok\"  and tx.code != \"error\"" +
+                 ") jointure " +
+                 "Group BY ondemand_session_id_2v " +
+                 "ORDER BY number DESC");
+
+
+3v-4v
+
+         Dataset<Row> sqlDF = spark.sql("SELECT sessionId_3v, count(sessionId_3v) as number " +
+                 "From( " +
+                 "SELECT date as date_3v, " +
+                 "session_id as sessionId_3v " +
+                 "From srmSessionId3v5cModel 3v " +
+                 "LEFT OUTER JOIN 4v " +
+                 "ON session_id = 4v.sessionId_4v " +
+                 ") jointure " +
+                 "GROUP BY sessionId_3v " +
+                 "ORDER BY number DESC");
+
+3v-4v-5v
+
+         Dataset<Row> sqlDF = spark.sql("SELECT sessionId_3v, count(sessionId_3v) as number " +
+                 "FROM ( " +
+                    "SELECT 3v.date as date_3v, " +
+                    "3v.session_id as sessionId_3v, 3v.client_id, tsid_4v " +
+                    "svcid_4v, content_type_4v, 5v.vip as vip_5v, " +
+                    "5v.content_name as content_name_5v, 5v.content_type as content_type_5v " +
+                    "From srmSessionId3v5cModel 3v " +
+                    "LEFT JOIN 4v " +
+                    "ON 3v.session_id = 4v.sessionId_4v " +
+                    "LEFT JOIN srmSessionStart5vModel 5v " +
+                    "ON 3v.session_id = 5v.session_id " +
+                 ") jointure " +
+                 "GROUP BY sessionId_3v " +
+                 "ORDER BY number DESC").repartition(1);
+
+3v-4v-5v-7v
+
+         Dataset<Row> sqlDF = spark.sql("SELECT sessionId_3v, count(sessionId_3v) as number " +
+                 "FROM ( " +
+                    "SELECT 3v.date as date_3v, 3v.session_id as sessionId_3v, 3v.client_id, " +
+                    "tsid_4v, svcid_4v, content_type_4v, " +
+                    "5v.vip as vip_5v, 5v.content_name as content_name_5v, 5v.content_type as content_type_5v, " +
+                    "7v.date as date_7v, 7v.session_id as sessionId_7v " +
+                    "From srmSessionId3v5cModel 3v " +
+                    "LEFT JOIN 4v " +
+                    "ON 3v.session_id = 4v.sessionId_4v " +
+                    "LEFT JOIN srmSessionStart5vModel 5v " +
+                    "ON 3v.session_id = 5v.session_id " +
+                    "LEFT JOIN srmEnd7v7cModel 7v " +
+                    "ON 3v.session_id = 7v.session_id " +
+                 ") jointure " +
+                 "GROUP BY sessionId_3v " +
+                 "ORDER BY number DESC ");

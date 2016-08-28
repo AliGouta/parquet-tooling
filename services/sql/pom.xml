@@ -3,20 +3,14 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <parent>
-        <artifactId>sfr-log-analysis</artifactId>
+        <artifactId>services</artifactId>
         <groupId>com.mediatvcom.sfr</groupId>
         <version>1.0-SNAPSHOT</version>
     </parent>
-
     <modelVersion>4.0.0</modelVersion>
-    <groupId>com.mediatvcom.sfr</groupId>
-    <artifactId>services</artifactId>
-    <packaging>pom</packaging>
 
-    <modules>
-        <module>convert</module>
-        <module>sql</module>
-    </modules>
+    <groupId>com.mediatvcom.sfr.services</groupId>
+    <artifactId>sql</artifactId>
 
 
 </project>

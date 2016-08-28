@@ -3,3 +3,5 @@
 *.iml
 component/*iml
 component/converter/*iml
+*/target/*
+*/target/**

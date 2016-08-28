@@ -67,9 +67,23 @@ public class ConvertUtils {
         convertCsvToParquet(csvFile, outputParquetFile, false);
     }
 
+    public static void convertCsvToParquet(File csvFile, File outputParquetFile, String schema) throws IOException {
+        convertCsvToParquet(csvFile, outputParquetFile, schema, false);
+    }
+
     public static void convertCsvToParquet(File csvFile, File outputParquetFile, boolean enableDictionary) throws IOException {
         LOG.info("Converting " + csvFile.getName() + " to " + outputParquetFile.getName());
         String rawSchema = getSchema(csvFile);
+        CsvToParquet(csvFile, outputParquetFile, enableDictionary, rawSchema);
+    }
+
+    public static void convertCsvToParquet(File csvFile, File outputParquetFile, String schema, boolean enableDictionary) throws IOException {
+        LOG.info("Converting " + csvFile.getName() + " to " + outputParquetFile.getName());
+        CsvToParquet(csvFile, outputParquetFile, enableDictionary, schema);
+    }
+
+
+    private static void CsvToParquet(File csvFile, File outputParquetFile, boolean enableDictionary, String rawSchema) throws IOException {
         if(outputParquetFile.exists()) {
             throw new IOException("Output file " + outputParquetFile.getAbsolutePath() +
                     " already exists");

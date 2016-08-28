@@ -9,15 +9,16 @@ import static org.junit.Assert.*;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Locale;
 
 /**
  * Created by ali on 15/08/2016.
  */
 public class ConvertUtilsTest {
 
-    private static String output_file ="C:\\Users\\ali\\IdeaProjects\\sfr-spark\\component\\converter\\src\\main\\resources\\parquet\\output.parquet";
-    private static String output_file_csv ="C:\\Users\\ali\\IdeaProjects\\sfr-spark\\component\\converter\\src\\main\\resources\\tocsv\\output.csv";
-    private static String input_file ="C:\\Users\\ali\\IdeaProjects\\sfr-spark\\component\\converter\\src\\main\\resources\\csv_sfr.csv";
+    private static String output_file ="C:\\Users\\agouta\\IdeaProjects\\parquet-tooling\\component\\converter\\src\\main\\resources\\parquet\\output.parquet";
+    private static String output_file_csv ="C:\\Users\\ali\\IdeaProjects\\parquet-tooling\\component\\converter\\src\\main\\resources\\tocsv\\output.csv";
+    private static String input_file ="C:\\Users\\agouta\\IdeaProjects\\parquet-tooling\\component\\converter\\src\\main\\resources\\csv_sfr.csv";
 
     private final static File input_f = new File(input_file);
     private final static File output_f = new File(output_file);
@@ -27,6 +28,7 @@ public class ConvertUtilsTest {
     public void test_convert_to_parquet() {
 
         System.setProperty("hadoop.home.dir", "C:\\hadoop\\");
+        Locale.setDefault(new Locale("en", "US", "WIN"));
         run_parquet();
 
     }

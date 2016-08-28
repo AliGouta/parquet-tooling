@@ -21,7 +21,7 @@ public class CsvParquetWriter extends ParquetWriter<List<String>> {
     }
 
     public CsvParquetWriter(Path file, MessageType schema, boolean enableDictionary) throws IOException {
-        this(file, schema, CompressionCodecName.LZO, enableDictionary);
+        this(file, schema, CompressionCodecName.SNAPPY, enableDictionary);
     }
 
     public CsvParquetWriter(Path file, MessageType schema, CompressionCodecName codecName, boolean enableDictionary) throws IOException {

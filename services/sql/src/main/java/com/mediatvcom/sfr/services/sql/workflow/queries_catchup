@@ -1,0 +1,20 @@
+0c-1c
+
+SELECT date_0c, client_ip_0c, url_0c, code_http_0c, MIN(date_1c) as date_min_1c " +
+                    "FROM ( " +
+                        "SELECT 0c.date as date_0c, 0c.client_ip as client_ip_0c, " +
+                        "0c.url as url_0c, 0c.code_http as code_http_0c, 1c.date as date_1c " +
+                        "From srmGetContent0cModel 0c " +
+                        "LEFT JOIN srmPostContent1cModel 1c " +
+                        "ON 0c.client_ip = 1c.client_ip " +
+                        "and unix_timestamp(1c.date, \"yyyy-MM-dd HH:mm:ss,SSS\") >= unix_timestamp(0c.date, \"yyyy-MM-dd HH:mm:ss,SSS\") " +
+                        "and unix_timestamp(1c.date, \"yyyy-MM-dd HH:mm:ss,SSS\") < unix_timestamp(0c.date, \"yyyy-MM-dd HH:mm:ss,SSS\") + 2 " +
+                    " ) jointure " +
+                    "GROUP BY date_0c, client_ip_0c, url_0c, code_http_0c
+
+4c:
+
+"SELECT date as date_4c, vip as vip_4c, content_name as content_name_4c, " +
+                 "control_session as control_session_4c, content_type as content_type_4c, " +
+                 "client_id as client_id_4c, carteId as carteId_4c " +
+                 "From srmSessionStart4cModel 4c "
