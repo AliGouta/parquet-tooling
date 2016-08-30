@@ -6,6 +6,7 @@ import org.apache.spark.sql.types.DataTypes;
 import org.apache.spark.sql.types.StructField;
 import org.apache.spark.sql.types.StructType;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -14,7 +15,7 @@ import java.util.List;
  * Created by AGOUTA on 22/08/2016.
  */
 @Getter
-public class SrmSessionStart5vModel implements LogModel {
+public class SrmSessionStart5vModel implements LogModel, Serializable {
 
     private final StructType schema;
     private final String modelName = "vod_session-start_5v";

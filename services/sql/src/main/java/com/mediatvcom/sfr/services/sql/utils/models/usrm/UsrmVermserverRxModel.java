@@ -42,8 +42,8 @@ public class UsrmVermserverRxModel implements Serializable {
                 DataTypes.createStructField("cseq", DataTypes.StringType, true),
                 DataTypes.createStructField("mode", DataTypes.StringType, true),
                 DataTypes.createStructField("session", DataTypes.StringType, true),
-                DataTypes.createStructField("ip_rfgw", DataTypes.StringType, true),
-                DataTypes.createStructField("port_rfgw", DataTypes.StringType, true));
+                DataTypes.createStructField("ip_rfgw_wrong", DataTypes.StringType, true),
+                DataTypes.createStructField("port_rfgw_wrong", DataTypes.StringType, true));
 
 
         StructType schema = DataTypes.createStructType(new ArrayList<>(fields));
