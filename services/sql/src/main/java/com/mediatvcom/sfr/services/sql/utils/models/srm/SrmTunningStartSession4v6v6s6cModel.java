@@ -15,16 +15,16 @@ import java.util.List;
  * Created by AGOUTA on 22/08/2016.
  */
 @Getter
-public class SrmTunningStartSession4v6v4s6cModel implements LogModel, Serializable {
+public class SrmTunningStartSession4v6v6s6cModel implements LogModel, Serializable {
 
     private final StructType schema;
-    private final String modelName = "vod_catchup_tuning_start-session_4v_6v_4s_6c";
+    private final String modelName = "vod_catchup_tuning_start-session_4v_6v_6s_6c";
     private final String logComponent = "srm";
 
     private final String date;
     private final String rootCsv;
 
-    public SrmTunningStartSession4v6v4s6cModel(String day, String rootCsv) {
+    public SrmTunningStartSession4v6v6s6cModel(String day, String rootCsv) {
         schema = buildschema();
         this.date = day;
         this.rootCsv = rootCsv;
@@ -44,7 +44,9 @@ public class SrmTunningStartSession4v6v4s6cModel implements LogModel, Serializab
                 DataTypes.createStructField("client_id", DataTypes.StringType, true),
                 DataTypes.createStructField("x_srm_error_code", DataTypes.StringType, true),
                 DataTypes.createStructField("x_srm_error_message", DataTypes.StringType, true),
-                DataTypes.createStructField("content_type", DataTypes.StringType, true));
+                DataTypes.createStructField("error", DataTypes.StringType, true),
+                DataTypes.createStructField("content_type", DataTypes.StringType, true),
+                DataTypes.createStructField("ott_component", DataTypes.StringType, true));
 
 
         StructType schema = DataTypes.createStructType(new ArrayList<>(fields));

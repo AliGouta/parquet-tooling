@@ -35,7 +35,8 @@ public class SrmSessionStart1sModel implements LogModel {
                 DataTypes.createStructField("date", DataTypes.StringType, true),
                 DataTypes.createStructField("vip", DataTypes.StringType, true),
                 DataTypes.createStructField("sdv", DataTypes.StringType, true),
-                DataTypes.createStructField("client_id", DataTypes.StringType, true));
+                DataTypes.createStructField("client_id", DataTypes.StringType, true),
+                DataTypes.createStructField("ott_component", DataTypes.StringType, true));
 
 
         StructType schema = DataTypes.createStructType(new ArrayList<>(fields));

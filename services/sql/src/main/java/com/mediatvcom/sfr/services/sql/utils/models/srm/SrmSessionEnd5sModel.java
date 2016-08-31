@@ -34,7 +34,8 @@ import java.util.List;
             List<StructField> fields = Arrays.asList(
                     DataTypes.createStructField("date", DataTypes.StringType, true),
                     DataTypes.createStructField("cseq", DataTypes.StringType, true),
-                    DataTypes.createStructField("session_id", DataTypes.StringType, true));
+                    DataTypes.createStructField("session_id", DataTypes.StringType, true),
+                    DataTypes.createStructField("ott_component", DataTypes.StringType, true));
 
 
             StructType schema = DataTypes.createStructType(new ArrayList<>(fields));

@@ -34,7 +34,8 @@ public class SrmEnd7v7cModel implements LogModel, Serializable {
 
         List<StructField> fields = Arrays.asList(
                 DataTypes.createStructField("date", DataTypes.StringType, true),
-                DataTypes.createStructField("session_id", DataTypes.StringType, true));
+                DataTypes.createStructField("session_id", DataTypes.StringType, true),
+                DataTypes.createStructField("ott_component", DataTypes.StringType, true));
 
 
         StructType schema = DataTypes.createStructType(new ArrayList<>(fields));

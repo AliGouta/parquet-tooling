@@ -41,7 +41,8 @@ public class SrmRessource2v2cModel implements LogModel, Serializable {
                 DataTypes.createStructField("qam_id", DataTypes.StringType, true),
                 DataTypes.createStructField("ip_rfgw", DataTypes.StringType, true),
                 DataTypes.createStructField("port_rfgw", DataTypes.StringType, true),
-                DataTypes.createStructField("qam_destination", DataTypes.StringType, true));
+                DataTypes.createStructField("qam_destination", DataTypes.StringType, true),
+                DataTypes.createStructField("ott_component", DataTypes.StringType, true));
 
 
         StructType schema = DataTypes.createStructType(new ArrayList<>(fields));

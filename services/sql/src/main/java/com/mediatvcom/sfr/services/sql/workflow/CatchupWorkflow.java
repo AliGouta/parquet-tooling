@@ -34,7 +34,7 @@ public class CatchupWorkflow implements Serializable {
     private final UsrmVermserverTxModel usrmVermserverTxModel;
     private final SrmSessionStart4cModel srmSessionStart4cModel;
     private final SrmSessionId3v5cModel srmSessionId3v5cModel;
-    private final SrmTunningStartSession4v6v4s6cModel srmTunningStartSession4v6v4s6cModel;
+    private final SrmTunningStartSession4v6v6s6cModel srmTunningStartSession4V6v6S6CModel;
     private final SrmEnd7v7cModel srmEnd7v7cModel;
     private final SrmEnd8cModel srmEnd8cModel;
 
@@ -69,7 +69,7 @@ public class CatchupWorkflow implements Serializable {
         this.usrmVermserverTxModel  = new UsrmVermserverTxModel(day, rootCsv);
         this.srmSessionStart4cModel = new SrmSessionStart4cModel(day, rootCsv);
         this.srmSessionId3v5cModel = new SrmSessionId3v5cModel(day,rootCsv);
-        this.srmTunningStartSession4v6v4s6cModel = new SrmTunningStartSession4v6v4s6cModel(day, rootCsv);
+        this.srmTunningStartSession4V6v6S6CModel = new SrmTunningStartSession4v6v6s6cModel(day, rootCsv);
         this.srmEnd7v7cModel  = new SrmEnd7v7cModel(day, rootCsv);
         this.srmEnd8cModel = new SrmEnd8cModel(day, rootCsv);
 
@@ -80,7 +80,7 @@ public class CatchupWorkflow implements Serializable {
         this.df_usrm_vermserver_tx = getDframe(usrmVermserverTxModel.getRootCsv(), usrmVermserverTxModel.getLogComponent(), usrmVermserverTxModel.getModelName(), usrmVermserverTxModel.getSchema(), day);
         this.df_srmSessionStart4cModel = getDframe(srmSessionStart4cModel.getRootCsv(), srmSessionStart4cModel.getLogComponent(), srmSessionStart4cModel.getModelName(), srmSessionStart4cModel.getSchema(), day);
         this.df_srmSessionId3v5cModel = getDframe(srmSessionId3v5cModel.getRootCsv(), srmSessionId3v5cModel.getLogComponent(), srmSessionId3v5cModel.getModelName(), srmSessionId3v5cModel.getSchema(), day);
-        this.df_srmTunningStartSession4v6v4s6cModel = getDframe(srmTunningStartSession4v6v4s6cModel.getRootCsv(), srmTunningStartSession4v6v4s6cModel.getLogComponent(), srmTunningStartSession4v6v4s6cModel.getModelName(), srmTunningStartSession4v6v4s6cModel.getSchema(), day);
+        this.df_srmTunningStartSession4v6v4s6cModel = getDframe(srmTunningStartSession4V6v6S6CModel.getRootCsv(), srmTunningStartSession4V6v6S6CModel.getLogComponent(), srmTunningStartSession4V6v6S6CModel.getModelName(), srmTunningStartSession4V6v6S6CModel.getSchema(), day);
         this.df_srmEnd7v7cModel = getDframe(srmEnd7v7cModel.getRootCsv(), srmEnd7v7cModel.getLogComponent(), srmEnd7v7cModel.getModelName(), srmEnd7v7cModel.getSchema(), day);
         this.df_srmEnd8cModel = getDframe(srmEnd8cModel.getRootCsv(), srmEnd8cModel.getLogComponent(), srmEnd8cModel.getModelName(), srmEnd8cModel.getSchema(), day);
 
@@ -96,7 +96,7 @@ public class CatchupWorkflow implements Serializable {
          /*
          df_srmSessionStart4cModel.createOrReplaceTempView("srmSessionStart4cModel");
          df_srmSessionId3v5cModel.createOrReplaceTempView("srmSessionId3v5cModel");
-         df_srmTunningStartSession4v6v4s6cModel.createOrReplaceTempView("srmTunningStartSession4v6v4s6cModel");
+         df_srmTunningStartSession4v6v4s6cModel.createOrReplaceTempView("srmTunningStartSession4V6v6S6CModel");
          df_srmEnd7v7cModel.createOrReplaceTempView("srmEnd7v7cModel");
          */
          df_srmEnd8cModel.createOrReplaceTempView("srmEnd8cModel");

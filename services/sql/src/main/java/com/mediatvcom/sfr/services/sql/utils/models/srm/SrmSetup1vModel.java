@@ -35,7 +35,8 @@ public class SrmSetup1vModel implements LogModel, Serializable {
         List<StructField> fields = Arrays.asList(
                 DataTypes.createStructField("date", DataTypes.StringType, true),
                 DataTypes.createStructField("url", DataTypes.StringType, true),
-                DataTypes.createStructField("client_id_reverse", DataTypes.StringType, true));
+                DataTypes.createStructField("client_id_reverse", DataTypes.StringType, true),
+                DataTypes.createStructField("ott_component", DataTypes.StringType, true));
 
 
         StructType schema = DataTypes.createStructType(new ArrayList<>(fields));

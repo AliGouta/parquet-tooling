@@ -40,7 +40,8 @@ public class SrmSessionId3v5cModel implements LogModel, Serializable {
                 DataTypes.createStructField("session_id", DataTypes.StringType, true),
                 DataTypes.createStructField("client_id", DataTypes.StringType, true),
                 DataTypes.createStructField("ip_rfgw", DataTypes.StringType, true),
-                DataTypes.createStructField("port_rfgw", DataTypes.StringType, true));
+                DataTypes.createStructField("port_rfgw", DataTypes.StringType, true),
+                DataTypes.createStructField("ott_component", DataTypes.StringType, true));
 
 
         StructType schema = DataTypes.createStructType(new ArrayList<>(fields));

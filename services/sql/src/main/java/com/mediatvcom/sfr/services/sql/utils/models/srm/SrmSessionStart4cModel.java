@@ -39,7 +39,8 @@ public class SrmSessionStart4cModel implements LogModel, Serializable {
                 DataTypes.createStructField("control_session", DataTypes.StringType, true),
                 DataTypes.createStructField("session_type", DataTypes.StringType, true),
                 DataTypes.createStructField("client_id", DataTypes.StringType, true),
-                DataTypes.createStructField("content_type", DataTypes.StringType, true));
+                DataTypes.createStructField("content_type", DataTypes.StringType, true),
+                DataTypes.createStructField("ott_component", DataTypes.StringType, true));
 
 
         StructType schema = DataTypes.createStructType(new ArrayList<>(fields));

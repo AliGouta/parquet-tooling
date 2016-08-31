@@ -37,7 +37,8 @@ public class SrmPostContent1cModel implements LogModel, Serializable {
                 DataTypes.createStructField("method", DataTypes.StringType, true),
                 DataTypes.createStructField("url", DataTypes.StringType, true),
                 DataTypes.createStructField("client_ip", DataTypes.StringType, true),
-                DataTypes.createStructField("code_http", DataTypes.StringType, true));
+                DataTypes.createStructField("code_http", DataTypes.StringType, true),
+                DataTypes.createStructField("ott_component", DataTypes.StringType, true));
 
 
         StructType schema = DataTypes.createStructType(new ArrayList<>(fields));
