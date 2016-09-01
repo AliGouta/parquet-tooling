@@ -15,16 +15,16 @@ import java.util.List;
  * Created by AGOUTA on 22/08/2016.
  */
 @Getter
-public class UsrmSnmpModel implements LogModel, Serializable {
+public class UsrmTransformedSnmpModel implements LogModel, Serializable {
 
     private final StructType schema;
-    private final String modelName = "usrm_snmp";
+    private final String modelName = "usrm_transformed_snmp";
     private final String logComponent = "usrm";
 
     private final String date;
     private final String rootCsv;
 
-    public UsrmSnmpModel(String day, String rootCsv) {
+    public UsrmTransformedSnmpModel(String day, String rootCsv) {
         schema = buildschema();
         this.date = day;
         this.rootCsv = rootCsv;
@@ -33,9 +33,9 @@ public class UsrmSnmpModel implements LogModel, Serializable {
     private StructType buildschema() {
 
         List<StructField> fields = Arrays.asList(
-                DataTypes.createStructField("date", DataTypes.StringType, true),
-                DataTypes.createStructField("object", DataTypes.StringType, true),
-                DataTypes.createStructField("state", DataTypes.StringType, true));
+                DataTypes.createStructField("rfgw_id", DataTypes.StringType, true),
+                DataTypes.createStructField("date_down", DataTypes.StringType, true),
+                DataTypes.createStructField("date_up", DataTypes.StringType, true));
 
 
         StructType schema = DataTypes.createStructType(new ArrayList<>(fields));

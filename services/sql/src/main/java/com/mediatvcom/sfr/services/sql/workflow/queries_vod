@@ -189,3 +189,35 @@ Join 1v and 4v to get all issues:
                     ") errors " +
                     "GROUP BY date_4v, x_srm_error_message_4v, carteId_4v, content_name_4v ")
                  .repartition(1);
+
+rx-tx: investigate the Not enough bandwidth
+
+         Dataset<Row> sqlDF = spark.sql("SELECT rx.date as date_rx, rx.ondemand_session_id as ondemand_session_id_rx, " +
+                 "rx.bitrate as bitrate_rx, rx.service_group as service_group_rx, rx.ip_rfgw as ip_rfgw_rx, " +
+                 "rx.port_rfgw as port_rfgw_rx, rx.mode as mode_rx, tx.code_http as code_http_tx, tx.cseq as cseq_tx " +
+                 "FROM usrm_vermserver_rx rx " +
+                 "LEFT JOIN usrm_vermserver_tx tx " +
+                 "ON rx.ondemand_session_id = tx.ondemand_session_id " +
+                 "where tx.code = \"error\" and tx.code_http = \"453 Not Enough Bandwidth\" " ).repartition(1);
+
+
+Not Enough bw:
+
+
+
+         Dataset<Row> sql4verrorDF = spark.sql("SELECT rx.date as date_rx, rx.ondemand_session_id as ondemand_session_id_rx, " +
+                 "rx.bitrate as bitrate_rx, regexp_extract(rx.service_group,\"(.+?_U).*\",1) as service_group_rx, rx.ip_rfgw as ip_rfgw_rx, " +
+                 "rx.port_rfgw as port_rfgw_rx, rx.mode as mode_rx, tx.code_http as code_http_tx, tx.cseq as cseq_tx " +
+                 "FROM usrm_vermserver_rx rx " +
+                 "LEFT JOIN usrm_vermserver_tx tx " +
+                 "ON rx.ondemand_session_id = tx.ondemand_session_id " +
+                 "where tx.code = \"error\" and tx.code_http = \"453 Not Enough Bandwidth\" " ).repartition(1);
+
+         sql4verrorDF.createOrReplaceTempView("4verrors");
+
+         Dataset<Row> sqlDF = spark.sql(" SELECT snmptf.*, 4verrors.* " +
+                         "FROM snmp_transformed snmptf " +
+                         "LEFT JOIN 4verrors " +
+                         "WHERE snmptf.rfgw_id = 4verrors.service_group_rx " +
+                         "and unix_timestamp(4verrors.date_rx, \"yyyy-MM-dd HH:mm:ss.SSS\") >= unix_timestamp(snmptf.date_down, \"yyyy-MM-dd HH:mm:ss.SSS\" ) " +
+                         "and unix_timestamp(4verrors.date_rx, \"yyyy-MM-dd HH:mm:ss.SSS\") < unix_timestamp(snmptf.date_up, \"yyyy-MM-dd HH:mm:ss.SSS\" )" ).repartition(1);

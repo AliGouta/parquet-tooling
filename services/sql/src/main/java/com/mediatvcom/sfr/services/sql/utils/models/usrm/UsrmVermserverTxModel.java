@@ -42,7 +42,8 @@ public class UsrmVermserverTxModel implements Serializable {
                 DataTypes.createStructField("modulation", DataTypes.StringType, true),
                 DataTypes.createStructField("ondemand_session_id", DataTypes.StringType, true),
                 DataTypes.createStructField("session", DataTypes.StringType, true),
-                DataTypes.createStructField("code", DataTypes.StringType, true));
+                DataTypes.createStructField("code", DataTypes.StringType, true),
+                DataTypes.createStructField("ott_component", DataTypes.StringType, true));
 
 
         StructType schema = DataTypes.createStructType(new ArrayList<>(fields));
