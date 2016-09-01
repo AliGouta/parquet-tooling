@@ -36,7 +36,7 @@ public class SrmEnd8cModel implements LogModel, Serializable {
                 DataTypes.createStructField("date", DataTypes.StringType, true),
                 DataTypes.createStructField("method", DataTypes.StringType, true),
                 DataTypes.createStructField("url", DataTypes.StringType, true),
-                DataTypes.createStructField("client_id", DataTypes.StringType, true),
+                DataTypes.createStructField("client_ip", DataTypes.StringType, true),
                 DataTypes.createStructField("ondemand_session_id", DataTypes.StringType, true),
                 DataTypes.createStructField("ott_component", DataTypes.StringType, true));
 

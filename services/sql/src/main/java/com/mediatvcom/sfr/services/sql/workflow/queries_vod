@@ -130,7 +130,7 @@ All VoD Workflow:
                  "4v.session_id as sessionId_4v, " +
                  "tsid as tsid_4v, svcid as svcid_4v, " +
                  "content_type as content_type_4v " +
-                 "From srmTunningStartSession4v6v4s6cModel 4v " +
+                 "From srmTunningStartSession4V6v6S6CModel 4v " +
                  "Group by session_id, tsid, svcid, content_type").cache();
 
          sqlDF4v.createOrReplaceTempView("4v");
@@ -174,7 +174,7 @@ All VoD Workflow:
                  "and unix_timestamp(3av.date, \"yyyy-MM-dd HH:mm:ss.SSS\") < ( unix_timestamp(common.date_2v, \"yyyy-MM-dd HH:mm:ss.SSS\") + 10 ) ").repartition(1);
 
 
-Join 1v and 4v to get all issues:
+Join 1v and 4v to get all issues: We have FileName
 
          Dataset<Row> sqlDF = spark.sql("SELECT MIN(date_1v) as date_1v_gr, date_4v as date_4v_gr, x_srm_error_message_4v as x_srm_error_message_4v_gr, " +
                                         "carteId_4v as carteId_4v_gr, content_name_4v as content_name_4v_gr " +
@@ -192,6 +192,11 @@ Join 1v and 4v to get all issues:
 
 rx-tx: investigate the Not enough bandwidth
 
+         SnmpTransfrom snmpTransfrom = new SnmpTransfrom(df_usrmSnmpModel);
+
+         Dataset<Row> snmpTransformedDF = spark.createDataFrame(snmpTransfrom.getRowSnmpTransformedRDD(), usrmTransformedSnmpModel.getSchema());
+         snmpTransformedDF.createOrReplaceTempView("snmp_transformed");
+
          Dataset<Row> sqlDF = spark.sql("SELECT rx.date as date_rx, rx.ondemand_session_id as ondemand_session_id_rx, " +
                  "rx.bitrate as bitrate_rx, rx.service_group as service_group_rx, rx.ip_rfgw as ip_rfgw_rx, " +
                  "rx.port_rfgw as port_rfgw_rx, rx.mode as mode_rx, tx.code_http as code_http_tx, tx.cseq as cseq_tx " +
@@ -201,9 +206,8 @@ rx-tx: investigate the Not enough bandwidth
                  "where tx.code = \"error\" and tx.code_http = \"453 Not Enough Bandwidth\" " ).repartition(1);
 
 
+We have: rfgw name
 Not Enough bw:
-
-
 
          Dataset<Row> sql4verrorDF = spark.sql("SELECT rx.date as date_rx, rx.ondemand_session_id as ondemand_session_id_rx, " +
                  "rx.bitrate as bitrate_rx, regexp_extract(rx.service_group,\"(.+?_U).*\",1) as service_group_rx, rx.ip_rfgw as ip_rfgw_rx, " +
@@ -221,3 +225,4 @@ Not Enough bw:
                          "WHERE snmptf.rfgw_id = 4verrors.service_group_rx " +
                          "and unix_timestamp(4verrors.date_rx, \"yyyy-MM-dd HH:mm:ss.SSS\") >= unix_timestamp(snmptf.date_down, \"yyyy-MM-dd HH:mm:ss.SSS\" ) " +
                          "and unix_timestamp(4verrors.date_rx, \"yyyy-MM-dd HH:mm:ss.SSS\") < unix_timestamp(snmptf.date_up, \"yyyy-MM-dd HH:mm:ss.SSS\" )" ).repartition(1);
+

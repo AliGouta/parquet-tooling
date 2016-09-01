@@ -17,7 +17,7 @@ public class SparkSqlRunner {
     @Parameter(names = "--src-path", description = "the root path where Csv files are located", required = true)
     String rootCsv = "C:\\Users\\agouta\\Desktop\\output.tar\\output";
     @Parameter(names = "--content-type", description = "Might be either vod, catch-up or Sdv", required = true)
-    String contentType = "vod";
+    String contentType = "catchup";
 
 
     public static void main(String[] args) {

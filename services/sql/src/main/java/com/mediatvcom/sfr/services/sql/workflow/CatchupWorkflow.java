@@ -125,18 +125,37 @@ public class CatchupWorkflow implements Serializable {
                  "client_id as client_id_4c, carteId as carteId_4c " +
                  "From srmSessionStart4cModel 4c ").repartition(1);
 */
+/*
+         Dataset<Row> sqlDF = spark.sql("SELECT Min(8c.date) as date_8c, ondemand_session_id as ondemand_session_id_8c, count(*) as number " +
+                 "from srmEnd8cModel 8c " +
+                 "Group by ondemand_session_id ");
+*/
 
          Dataset<Row> sqlDF = spark.sql("SELECT rx.date as date_rx, 2v.date as date_2v, 2v.ondemand_session_id as ondemand_session_id_2v, " +
                  "2v.code_http as code_http_2v, rx.bitrate as bitrate_rx, rx.service_group as service_group_rx, rx.ip_rfgw as ip_rfgw_rx, " +
                  "rx.port_rfgw as port_rfgw_rx, rx.mode as mode_rx, " +
-                 "8c.date as date_8c, 8c.method as method_8c " +
+                 "tjoin.date_8c as date_8c_tj " +
                  "FROM srmRessource2v2cModel 2v " +
                  "LEFT JOIN usrm_vermserver_rx rx " +
                  "ON rx.ondemand_session_id = 2v.ondemand_session_id and rx.bitrate is not null " +
                  "LEFT JOIN usrm_vermserver_tx tx " +
                  "ON rx.ondemand_session_id = tx.ondemand_session_id and tx.code != \"teardown_or_ok\"  and tx.code != \"error\" " +
-                 "LEFT JOIN srmEnd8cModel 8c " +
-                 "ON rx.ondemand_session_id = 8c.ondemand_session_id ").repartition(1);
+                 "JOIN ( SELECT Min(8c.date) as date_8c, 8c.ondemand_session_id as ondemand_session_id_8c " +
+                 "from srmEnd8cModel 8c " +
+                 "Group by ondemand_session_id) tjoin " +
+                 "ON rx.ondemand_session_id = tjoin.ondemand_session_id_8c " +
+                 "").repartition(1);
+
+         sqlDF.createOrReplaceTempView("cathup_success_session");
+
+         Dataset<Row> sqlcatchupDF = spark.sql("SELECT catchupok.date_rx as date_rx_catchupok, catchupok.bitrate_rx as bitrate_rx_catchupok, catchupok.service_group_rx as service_group_rx_catchupok, " +
+                 "catchupok.ip_rfgw_rx as ip_rfgw_rx_catchupok, catchupok.port_rfgw_rx as port_rfgw_rx_catchupok, " +
+                 "date as date_4c_catchupok, vip as vip_4c_catchupok, content_name as content_name_4c_catchupok, " +
+                 "content_type as content_type_4c_catchupok, client_id as client_id_4c_catchupok, carteId as carteId_4c_catchupok, catchupok.ondemand_session_id_2v as ondemand_session_id_2v_catchupok " +
+                 "FROM cathup_success_session catchupok " +
+                 "LEFT JOIN srmSessionStart4cModel 4c " +
+                 "ON 4c.control_session = catchupok.ondemand_session_id_2v ").repartition(1);
+
 
          sqlDF.show();
          sqlDF.write().csv("C:\\temp\\result2.csv");
