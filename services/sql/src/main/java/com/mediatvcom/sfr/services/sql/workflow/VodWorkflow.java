@@ -147,18 +147,17 @@ public class VodWorkflow implements Serializable {
          df_srmTunningStartSession4v6v4s6cModel.createOrReplaceTempView("srmTunningStartSession4V6v6S6CModel");
 
          SnmpTransfrom snmpTransfrom = new SnmpTransfrom(df_usrmSnmpModel);
-/*
 
+         // , cseq should be removed since it is somtimes set to some value!
          Dataset<Row> sqlDF4v = spark.sql("SELECT MIN(date) as date_min_4v, MAX(date) as date_max_4v, " +
                  "4v.session_id as sessionId_4v, " +
                  "tsid as tsid_4v, svcid as svcid_4v, " +
                  "content_type as content_type_4v " +
                  "From srmTunningStartSession4V6v6S6CModel 4v " +
-                 "Group by session_id, tsid, svcid, content_type, cseq").cache();
+                 "Group by session_id, tsid, svcid, content_type ").cache();
 
          sqlDF4v.createOrReplaceTempView("4v");
 
-*/
          Dataset<Row> sqlcommonDF = spark.sql("SELECT rx.date as date_rx, 2v.date as date_2v, 2v.ondemand_session_id as ondemand_session_id_2v, " +
                  "2v.code_http as code_http_2v, rx.bitrate as bitrate_rx, rx.service_group as service_group_rx, tx.ip_rfgw as ip_rfgw_tx, " +
                  "tx.port_rfgw as port_rfgw_tx, rx.mode as mode_rx " +
@@ -171,33 +170,36 @@ public class VodWorkflow implements Serializable {
          sqlcommonDF.createOrReplaceTempView("common");
 
 
-/*
          Dataset<Row> sqlDF3a1v = spark.sql("SELECT MAX(1vus.date) as date_1vus, 3aus.date as date_3aus, " +
-                 "3aus.cseq as cseq_3aus, 3aus.client_id as client_id_3aus, 3aus.streamer as streamer_3aus, 3aus.content_name as content_name_3aus " +
+                 "3aus.cseq as cseq_3aus, 3aus.client_id as client_id_3aus, 3aus.streamer as streamer_3aus, " +
+                 "3aus.content_name as content_name_3aus, 3aus.carteId as carteId_3aus " +
                  "From streamerModel 3aus " +
                  "JOIN srmSetup1vModel 1vus " +
                  "ON 1vus.content_name = 3aus.content_name and 1vus.carteId = 3aus.carteId " +
                  "and unix_timestamp(3aus.date, \"yyyy-MM-dd HH:mm:ss.SSSSSS\") >= unix_timestamp(1vus.date, \"yyyy-MM-dd HH:mm:ss.SSS\") " +
-                 "Group by 3aus.client_id, 3aus.streamer, 3aus.cseq, 3aus.content_name, 3aus.date ").repartition(1);
+                 "Group by 3aus.client_id, 3aus.streamer, 3aus.cseq, 3aus.content_name, 3aus.date, 3aus.carteId ").cache();
 
          sqlDF3a1v.createOrReplaceTempView("3aus1vus");
-*/
-         Dataset<Row> sqlDF3a1v = spark.sql("SELECT MAX(common.date_rx) as date_common, 3aus.date as date_3aus, 3aus.client_id as client_id_3aus, " +
-                 "3aus.ip_rfgw as ip_rfgw_3aus, 3aus.port_rfgw as port_rfgw_3aus, 3aus.content_name as content_name_3aus " +
+
+         Dataset<Row> sqlDF3aCommon = spark.sql("SELECT MAX(common.date_rx) as date_common, 3aus.date as date_3aus, 3aus.client_id as client_id_3aus, " +
+                 "3aus.ip_rfgw as ip_rfgw_3aus, 3aus.port_rfgw as port_rfgw_3aus, 3aus.content_name as content_name_3aus, " +
+                 "common.bitrate_rx as bitrate_rx_common, common.service_group_rx as service_group_rx_common, common.mode_rx as mode_rx_3aus " +
                  "From streamerModel 3aus " +
                  "JOIN common " +
                  "ON common.port_rfgw_tx = 3aus.port_rfgw and common.ip_rfgw_tx = 3aus.ip_rfgw " +
                  "and ( unix_timestamp(3aus.date, \"yyyy-MM-dd HH:mm:ss.SSSSSS\") + 7200 ) >= unix_timestamp(common.date_rx, \"yyyy-MM-dd HH:mm:ss.SSS\")  " +
-                 "Group by 3aus.client_id, 3aus.cseq, 3aus.content_name, 3aus.date, 3aus.ip_rfgw, 3aus.port_rfgw ").repartition(1);
+                 "Group by 3aus.client_id, 3aus.cseq, common.bitrate_rx, common.service_group_rx, common.mode_rx, " +
+                 "3aus.content_name, 3aus.date, 3aus.ip_rfgw, 3aus.port_rfgw ").cache();
 
-         sqlDF3a1v.createOrReplaceTempView("3auscommon");
-/*
-         Dataset<Row> sqlDF = spark.sql("SELECT 1v.date as date_1v, 3av.date as date_3av, 3av.port_rfgw as port_rfgw_3av, 3av.ip_rfgw as ip_rfgw_3av, " +
+         sqlDF3aCommon.createOrReplaceTempView("3auscommon");
+
+         Dataset<Row> sqlDF = spark.sql("SELECT 3aus1vus.date_1vus as date_1vus_3aus, 3av.date as date_3av, 3av.port_rfgw as port_rfgw_3av, 3av.ip_rfgw as ip_rfgw_3av, " +
                  "3av.content_name as content_name_3av, 3av.carteId as carteId_3av, 3av.streamer as streamer_3av, " +
                  "3v.date as date_3v, 3v.session_id as sessionId_3v, 3v.client_id as client_id_3v, " +
                  "date_min_4v, tsid_4v, svcid_4v, content_type_4v, " +
                  "5v.vip as vip_5v, 5v.content_name as content_name_5v, 5v.content_type as content_type_5v, " +
-                 "7v.date as date_7v, 7v.session_id as sessionId_7v " +
+                 "7v.date as date_7v, 7v.session_id as sessionId_7v, " +
+                 "3auscommon.service_group_rx_common as service_group_rx_common, 3auscommon.mode_rx_3aus as mode_rx_3aus_common " +
                  "From streamerModel 3av " +
                  "LEFT JOIN srmSessionId3v5cModel 3v " +
                  "ON 3av.cseq = 3v.cseq " +
@@ -207,14 +209,16 @@ public class VodWorkflow implements Serializable {
                  "ON 3v.session_id = 5v.session_id " +
                  "LEFT JOIN srmEnd7v7cModel 7v " +
                  "ON 3v.session_id = 7v.session_id " +
-                 "JOIN srmSetup1vModel 1v " +
-                 "ON 1v.content_name = 3av.content_name and 1v.carteId = 3av.carteId " +
-                 "and unix_timestamp(3av.date, \"yyyy-MM-dd HH:mm:ss.SSS\") >= unix_timestamp(1v.date, \"yyyy-MM-dd HH:mm:ss.SSSSSS\") " +
-                 "and unix_timestamp(3av.date, \"yyyy-MM-dd HH:mm:ss.SSS\") < ( unix_timestamp(1v.date, \"yyyy-MM-dd HH:mm:ss.SSSSSS\") + 60 ) ").repartition(1);
+                 "JOIN 3aus1vus " +
+                 "ON 3aus1vus.content_name_3aus = 3av.content_name and 3aus1vus.client_id_3aus = 3av.client_id " +
+                 "and 3aus1vus.cseq_3aus = 3av.cseq and 3aus1vus.date_3aus = 3av.date " +
+                 "JOIN 3auscommon " +
+                 "ON 3auscommon.ip_rfgw_3aus = 3av.ip_rfgw and 3auscommon.port_rfgw_3aus = 3av.port_rfgw " +
+                 "and 3auscommon.date_3aus = 3av.date ").repartition(1);
 
-*/
-         sqlDF3a1v.show();
-         sqlDF3a1v.write().csv("C:\\temp\\result10.csv");
+
+         sqlDF.show();
+         sqlDF.write().csv("C:\\temp\\result2.csv");
 
      }
 

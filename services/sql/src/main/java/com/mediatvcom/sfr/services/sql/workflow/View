@@ -1,0 +1,29 @@
+3aus1vus.date_1vus as date_1vus_3aus, 3av.date as date_3av, 3av.port_rfgw as port_rfgw_3av, 3av.ip_rfgw as ip_rfgw_3av, " +
+                 "3av.content_name as content_name_3av, 3av.carteId as carteId_3av, 3av.streamer as streamer_3av, " +
+                 "3v.date as date_3v, 3v.session_id as sessionId_3v, 3v.client_id as client_id_3v, " +
+                 "date_min_4v, tsid_4v, svcid_4v, content_type_4v, " +
+                 "5v.vip as vip_5v, 5v.content_name as content_name_5v, 5v.content_type as content_type_5v, " +
+                 "7v.date as date_7v, 7v.session_id as sessionId_7v, " +
+                 "3auscommon.service_group_rx_common as service_group_rx_common, 3auscommon.mode_rx_3aus as mode_rx_3aus_common " +
+
+
+Vod Success:
+
+date_1vus_3aus, 3av.port_rfgw as port_rfgw_3av, 3av.ip_rfgw as ip_rfgw_3av, 3av.content_name as content_name_3av, 3av.carteId as carteId_3av, 3av.streamer as streamer_3av, 3v.client_id as client_id_3v
+5v.content_type as content_type_5v, 7v.date as date_7v, 3auscommon.service_group_rx_common as service_group_rx_common, 3auscommon.mode_rx_3aus as mode_rx_3aus_common
+
+
+
+         Dataset<Row> sqlDF = spark.sql("SELECT MIN(date_1v) as date_1v_gr, date_4v as date_4v_gr, x_srm_error_message_4v as x_srm_error_message_4v_gr, " +
+                                        "carteId_4v as carteId_4v_gr, content_name_4v as content_name_4v_gr " +
+                    "FROM ( " +
+                        "SELECT 1v.date as date_1v, " +
+                        "4v.date as date_4v, 4v.x_srm_error_message as x_srm_error_message_4v, 4v.carteId as carteId_4v, 4v.content_name as content_name_4v " +
+                        "FROM srmTunningStartSession4V6v6S6CModel 4v " +
+                        "LEFT JOIN srmSetup1vModel 1v " +
+                        "ON 1v.content_name = 4v.content_name and 1v.carteId = 4v.carteId " +
+                        "and unix_timestamp(4v.date, \"yyyy-MM-dd HH:mm:ss.SSS\") >= unix_timestamp(1v.date, \"yyyy-MM-dd HH:mm:ss.SSS\" ) " +
+                        "where 4v.error = \"true\" and 4v.content_name rlike '^[A-Z].*' " +
+                    ") errors " +
+                    "GROUP BY date_4v, x_srm_error_message_4v, carteId_4v, content_name_4v ")
+                 .repartition(1);
