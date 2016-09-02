@@ -174,20 +174,20 @@ All VoD Workflow:
                  "and unix_timestamp(3av.date, \"yyyy-MM-dd HH:mm:ss.SSS\") < ( unix_timestamp(common.date_2v, \"yyyy-MM-dd HH:mm:ss.SSS\") + 10 ) ").repartition(1);
 
 
-Join 1v and 4v to get all issues: We have FileName
+Join 1v and 4v to get all issues (But not BW): We have FileName
 
-         Dataset<Row> sqlDF = spark.sql("SELECT MIN(date_1v) as date_1v_gr, date_4v as date_4v_gr, x_srm_error_message_4v as x_srm_error_message_4v_gr, " +
-                                        "carteId_4v as carteId_4v_gr, content_name_4v as content_name_4v_gr " +
-                    "FROM ( " +
-                        "SELECT 1v.date as date_1v, " +
-                        "4v.date as date_4v, 4v.x_srm_error_message as x_srm_error_message_4v, 4v.carteId as carteId_4v, 4v.content_name as content_name_4v " +
-                        "FROM srmTunningStartSession4V6v6S6CModel 4v " +
-                        "LEFT JOIN srmSetup1vModel 1v " +
-                        "ON 1v.content_name = 4v.content_name and 1v.carteId = 4v.carteId " +
-                        "and unix_timestamp(4v.date, \"yyyy-MM-dd HH:mm:ss.SSS\") >= unix_timestamp(1v.date, \"yyyy-MM-dd HH:mm:ss.SSS\" ) " +
-                        "where 4v.error = \"true\" and 4v.content_name rlike '^[A-Z].*' " +
-                    ") errors " +
-                    "GROUP BY date_4v, x_srm_error_message_4v, carteId_4v, content_name_4v ")
+         Dataset<Row> sqlDF = spark.sql("SELECT MIN(date_1v) as date_1v_gr, content_type_1v as content_type, date_4v as date_4v_gr, x_srm_error_message_4v as x_srm_error_message_4v_gr, " +
+                 "carteId_4v as carteId_4v_gr, content_name_4v as content_name_4v_gr,  " +
+                 "FROM ( " +
+                 "SELECT 1v.date as date_1v, " +
+                 "4v.date as date_4v, 4v.x_srm_error_message as x_srm_error_message_4v, 4v.carteId as carteId_4v, 4v.content_name as content_name_4v, 1v.content_type as content_type_1v " +
+                 "FROM srmTunningStartSession4V6v6S6CModel 4v " +
+                 "LEFT JOIN srmSetup1vModel 1v " +
+                 "ON 1v.content_name = 4v.content_name and 1v.carteId = 4v.carteId " +
+                 "and unix_timestamp(4v.date, \"yyyy-MM-dd HH:mm:ss.SSS\") >= unix_timestamp(1v.date, \"yyyy-MM-dd HH:mm:ss.SSS\" ) " +
+                 "where 4v.error = \"true\" and 4v.content_name rlike '^[A-Z].*' " +
+                 ") errors " +
+                 "GROUP BY date_4v, x_srm_error_message_4v, carteId_4v, content_name_4v, content_type_1v ")
                  .repartition(1);
 
 rx-tx: investigate the Not enough bandwidth
@@ -253,14 +253,14 @@ All VOD Clear-Final:
          sqlcommonDF.createOrReplaceTempView("common");
 
 
-         Dataset<Row> sqlDF3a1v = spark.sql("SELECT MAX(1vus.date) as date_1vus, 3aus.date as date_3aus, " +
+         Dataset<Row> sqlDF3a1v = spark.sql("SELECT MAX(1vus.date) as date_1vus, 1vus.content_type as content_type_1vus, 3aus.date as date_3aus, " +
                  "3aus.cseq as cseq_3aus, 3aus.client_id as client_id_3aus, 3aus.streamer as streamer_3aus, " +
                  "3aus.content_name as content_name_3aus, 3aus.carteId as carteId_3aus " +
                  "From streamerModel 3aus " +
                  "JOIN srmSetup1vModel 1vus " +
                  "ON 1vus.content_name = 3aus.content_name and 1vus.carteId = 3aus.carteId " +
                  "and unix_timestamp(3aus.date, \"yyyy-MM-dd HH:mm:ss.SSSSSS\") >= unix_timestamp(1vus.date, \"yyyy-MM-dd HH:mm:ss.SSS\") " +
-                 "Group by 3aus.client_id, 3aus.streamer, 3aus.cseq, 3aus.content_name, 3aus.date, 3aus.carteId ").cache();
+                 "GROUP BY 3aus.client_id, 3aus.streamer, 3aus.cseq, 3aus.content_name, 3aus.date, 3aus.carteId, 1vus.content_type ").cache();
 
          sqlDF3a1v.createOrReplaceTempView("3aus1vus");
 
@@ -279,10 +279,11 @@ All VOD Clear-Final:
          Dataset<Row> sqlDF = spark.sql("SELECT 3aus1vus.date_1vus as date_1vus_3aus, 3av.date as date_3av, 3av.port_rfgw as port_rfgw_3av, 3av.ip_rfgw as ip_rfgw_3av, " +
                  "3av.content_name as content_name_3av, 3av.carteId as carteId_3av, 3av.streamer as streamer_3av, " +
                  "3v.date as date_3v, 3v.session_id as sessionId_3v, 3v.client_id as client_id_3v, " +
-                 "date_min_4v, tsid_4v, svcid_4v, content_type_4v, " +
+                 "date_min_4v, tsid_4v, svcid_4v, " +
                  "5v.vip as vip_5v, 5v.content_name as content_name_5v, 5v.content_type as content_type_5v, " +
                  "7v.date as date_7v, 7v.session_id as sessionId_7v, " +
-                 "3auscommon.service_group_rx_common as service_group_rx_common, 3auscommon.mode_rx_3aus as mode_rx_3aus_common " +
+                 "3auscommon.service_group_rx_common as service_group_rx_common, 3auscommon.bitrate_rx_common as bitrate_rx , 3auscommon.mode_rx_3aus as mode_rx_3aus_common, " +
+                 "3aus1vus.content_type_1vus as content_type " +
                  "From streamerModel 3av " +
                  "LEFT JOIN srmSessionId3v5cModel 3v " +
                  "ON 3av.cseq = 3v.cseq " +
@@ -298,3 +299,54 @@ All VOD Clear-Final:
                  "JOIN 3auscommon " +
                  "ON 3auscommon.ip_rfgw_3aus = 3av.ip_rfgw and 3auscommon.port_rfgw_3aus = 3av.port_rfgw " +
                  "and 3auscommon.date_3aus = 3av.date ").repartition(1);
+
+
+VoD BW Error :
+
+         SnmpTransfrom snmpTransfrom = new SnmpTransfrom(df_usrmSnmpModel);
+
+         Dataset<Row> snmpTransformedDF = spark.createDataFrame(snmpTransfrom.getRowSnmpTransformedRDD(), usrmTransformedSnmpModel.getSchema());
+
+         snmpTransformedDF.createOrReplaceTempView("snmp_transformed");
+
+         Dataset<Row> sql4verrorDF = spark.sql("SELECT rx.date as date_rx, rx.ondemand_session_id as ondemand_session_id_rx, " +
+                 "rx.bitrate as bitrate_rx, rx.service_group as service_group_rx, regexp_extract(rx.service_group,\"(.+?_U).*\",1) as service_group_detail_rx, rx.ip_rfgw as ip_rfgw_rx, " +
+                 "rx.port_rfgw as port_rfgw_rx, rx.mode as mode_rx, tx.code_http as code_http_tx, tx.cseq as cseq_tx " +
+                 "FROM usrm_vermserver_rx rx " +
+                 "LEFT JOIN usrm_vermserver_tx tx " +
+                 "ON rx.ondemand_session_id = tx.ondemand_session_id " +
+                 "where rx.mode = \"unicast\" and tx.code = \"error\" and tx.code_http = \"453 Not Enough Bandwidth\" " ).repartition(1);
+
+         sql4verrorDF.createOrReplaceTempView("4verrors");
+
+         Dataset<Row> sqlsnmpDF = spark.sql(" SELECT snmptf.date_down as date_down_4vbw, snmptf.date_up as date_up_4vbw, " +
+                 "4verrors.ondemand_session_id_rx as ondemand_session_id_rx_4v_4vbw " +
+                 "FROM snmp_transformed snmptf " +
+                 "LEFT JOIN 4verrors " +
+                 "WHERE snmptf.rfgw_id = 4verrors.service_group_detail_rx " +
+                 "and unix_timestamp(4verrors.date_rx, \"yyyy-MM-dd HH:mm:ss.SSS\") >= unix_timestamp(snmptf.date_down, \"yyyy-MM-dd HH:mm:ss.SSS\" ) " +
+                 "and unix_timestamp(4verrors.date_rx, \"yyyy-MM-dd HH:mm:ss.SSS\") < unix_timestamp(snmptf.date_up, \"yyyy-MM-dd HH:mm:ss.SSS\" )" ).repartition(1);
+
+         sqlsnmpDF.createOrReplaceTempView("snmp4v");
+
+         Dataset<Row> sqlbwDF = spark.sql("SELECT 4verrors.date_rx, 4verrors.bitrate_rx, 4verrors.service_group_rx, 4verrors.ip_rfgw_rx, 4verrors.port_rfgw_rx, 4verrors.service_group_detail_rx, " +
+                 "4verrors.code_http_tx, snmp4v.date_down_4vbw, snmp4v.date_up_4vbw, 4verrors.ondemand_session_id_rx, " +
+                 "if (snmp4v.ondemand_session_id_rx_4v_4vbw = 4verrors.ondemand_session_id_rx, \"SRM Disconnected From USRM\", \"Not Enough Bandwidth\") as real_error_bw " +
+                 "FROM 4verrors " +
+                 "LEFT JOIN snmp4v " +
+                 "ON snmp4v.ondemand_session_id_rx_4v_4vbw = 4verrors.ondemand_session_id_rx ").repartition(1);
+
+
+
+
+Catchup content not found Error:
+
+         Dataset<Row> sqlDF = spark.sql("SELECT * " +
+                 "from srmGetContent0cModel 0c " +
+                 "WHERE code_http = \"404 Not Found\"");
+
+catchup several errors:
+
+         Dataset<Row> sqlDF = spark.sql("SELECT * " +
+                 "from srmPostContent1cModel " +
+                 "WHERE code_http != \"200 OK\"");

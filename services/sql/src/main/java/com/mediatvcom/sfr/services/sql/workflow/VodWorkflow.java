@@ -27,12 +27,10 @@ import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static org.apache.spark.sql.functions.avg;
-import static org.apache.spark.sql.functions.callUDF;
-import static org.apache.spark.sql.functions.lag;
-
 import scala.Tuple2;
 import scala.Tuple3;
+
+import static org.apache.spark.sql.functions.*;
 
 /**
  * Created by AGOUTA on 22/08/2016.
@@ -138,6 +136,8 @@ public class VodWorkflow implements Serializable {
                  .withColumn("carteId", callUDF("getCarteOnSetup", df_srmSetup1vModel.col("client_id_reverse")));
          df_srmSetup1vModel = df_srmSetup1vModel
                  .withColumn("content_name", callUDF("getContentNameOnSetup", df_srmSetup1vModel.col("url")));
+
+         df_srmSetup1vModel = df_srmSetup1vModel.withColumn("content_type", lit("vod"));
          df_srmSetup1vModel.createOrReplaceTempView("srmSetup1vModel");
 
          df_srmTunningStartSession4v6v4s6cModel = df_srmTunningStartSession4v6v4s6cModel
@@ -148,77 +148,29 @@ public class VodWorkflow implements Serializable {
 
          SnmpTransfrom snmpTransfrom = new SnmpTransfrom(df_usrmSnmpModel);
 
-         // , cseq should be removed since it is somtimes set to some value!
-         Dataset<Row> sqlDF4v = spark.sql("SELECT MIN(date) as date_min_4v, MAX(date) as date_max_4v, " +
-                 "4v.session_id as sessionId_4v, " +
-                 "tsid as tsid_4v, svcid as svcid_4v, " +
-                 "content_type as content_type_4v " +
-                 "From srmTunningStartSession4V6v6S6CModel 4v " +
-                 "Group by session_id, tsid, svcid, content_type ").cache();
 
-         sqlDF4v.createOrReplaceTempView("4v");
-
-         Dataset<Row> sqlcommonDF = spark.sql("SELECT rx.date as date_rx, 2v.date as date_2v, 2v.ondemand_session_id as ondemand_session_id_2v, " +
-                 "2v.code_http as code_http_2v, rx.bitrate as bitrate_rx, rx.service_group as service_group_rx, tx.ip_rfgw as ip_rfgw_tx, " +
-                 "tx.port_rfgw as port_rfgw_tx, rx.mode as mode_rx " +
-                 "FROM srmRessource2v2cModel 2v " +
-                 "LEFT JOIN usrm_vermserver_rx rx " +
-                 "ON rx.ondemand_session_id = 2v.ondemand_session_id and rx.bitrate is not null " +
-                 "LEFT JOIN usrm_vermserver_tx tx " +
-                 "ON rx.ondemand_session_id = tx.ondemand_session_id and tx.code != \"teardown_or_ok\"  and tx.code != \"error\" ").cache();
-
-         sqlcommonDF.createOrReplaceTempView("common");
-
-
-         Dataset<Row> sqlDF3a1v = spark.sql("SELECT MAX(1vus.date) as date_1vus, 3aus.date as date_3aus, " +
-                 "3aus.cseq as cseq_3aus, 3aus.client_id as client_id_3aus, 3aus.streamer as streamer_3aus, " +
-                 "3aus.content_name as content_name_3aus, 3aus.carteId as carteId_3aus " +
-                 "From streamerModel 3aus " +
-                 "JOIN srmSetup1vModel 1vus " +
-                 "ON 1vus.content_name = 3aus.content_name and 1vus.carteId = 3aus.carteId " +
-                 "and unix_timestamp(3aus.date, \"yyyy-MM-dd HH:mm:ss.SSSSSS\") >= unix_timestamp(1vus.date, \"yyyy-MM-dd HH:mm:ss.SSS\") " +
-                 "Group by 3aus.client_id, 3aus.streamer, 3aus.cseq, 3aus.content_name, 3aus.date, 3aus.carteId ").cache();
-
-         sqlDF3a1v.createOrReplaceTempView("3aus1vus");
-
-         Dataset<Row> sqlDF3aCommon = spark.sql("SELECT MAX(common.date_rx) as date_common, 3aus.date as date_3aus, 3aus.client_id as client_id_3aus, " +
-                 "3aus.ip_rfgw as ip_rfgw_3aus, 3aus.port_rfgw as port_rfgw_3aus, 3aus.content_name as content_name_3aus, " +
-                 "common.bitrate_rx as bitrate_rx_common, common.service_group_rx as service_group_rx_common, common.mode_rx as mode_rx_3aus " +
-                 "From streamerModel 3aus " +
-                 "JOIN common " +
-                 "ON common.port_rfgw_tx = 3aus.port_rfgw and common.ip_rfgw_tx = 3aus.ip_rfgw " +
-                 "and ( unix_timestamp(3aus.date, \"yyyy-MM-dd HH:mm:ss.SSSSSS\") + 7200 ) >= unix_timestamp(common.date_rx, \"yyyy-MM-dd HH:mm:ss.SSS\")  " +
-                 "Group by 3aus.client_id, 3aus.cseq, common.bitrate_rx, common.service_group_rx, common.mode_rx, " +
-                 "3aus.content_name, 3aus.date, 3aus.ip_rfgw, 3aus.port_rfgw ").cache();
-
-         sqlDF3aCommon.createOrReplaceTempView("3auscommon");
-
-         Dataset<Row> sqlDF = spark.sql("SELECT 3aus1vus.date_1vus as date_1vus_3aus, 3av.date as date_3av, 3av.port_rfgw as port_rfgw_3av, 3av.ip_rfgw as ip_rfgw_3av, " +
-                 "3av.content_name as content_name_3av, 3av.carteId as carteId_3av, 3av.streamer as streamer_3av, " +
-                 "3v.date as date_3v, 3v.session_id as sessionId_3v, 3v.client_id as client_id_3v, " +
-                 "date_min_4v, tsid_4v, svcid_4v, content_type_4v, " +
-                 "5v.vip as vip_5v, 5v.content_name as content_name_5v, 5v.content_type as content_type_5v, " +
-                 "7v.date as date_7v, 7v.session_id as sessionId_7v, " +
-                 "3auscommon.service_group_rx_common as service_group_rx_common, 3auscommon.mode_rx_3aus as mode_rx_3aus_common " +
-                 "From streamerModel 3av " +
-                 "LEFT JOIN srmSessionId3v5cModel 3v " +
-                 "ON 3av.cseq = 3v.cseq " +
-                 "LEFT JOIN 4v " +
-                 "ON 3v.session_id = 4v.sessionId_4v " +
-                 "LEFT JOIN srmSessionStart5vModel 5v " +
-                 "ON 3v.session_id = 5v.session_id " +
-                 "LEFT JOIN srmEnd7v7cModel 7v " +
-                 "ON 3v.session_id = 7v.session_id " +
-                 "JOIN 3aus1vus " +
-                 "ON 3aus1vus.content_name_3aus = 3av.content_name and 3aus1vus.client_id_3aus = 3av.client_id " +
-                 "and 3aus1vus.cseq_3aus = 3av.cseq and 3aus1vus.date_3aus = 3av.date " +
-                 "JOIN 3auscommon " +
-                 "ON 3auscommon.ip_rfgw_3aus = 3av.ip_rfgw and 3auscommon.port_rfgw_3aus = 3av.port_rfgw " +
-                 "and 3auscommon.date_3aus = 3av.date ").repartition(1);
-
+         Dataset<Row> sqlDF = spark.sql("SELECT MIN(date_1v) as date_1v_gr, if (content_type_1v IS NOT null, content_type_1v, \"catchup\") as content_type, " +
+                 "date_4v as date_4v_gr, x_srm_error_message_4v as x_srm_error_message_4v_gr, " +
+                 "carteId_4v as carteId_4v_gr, content_name_4v as content_name_4v_gr " +
+                 "FROM ( " +
+                 "SELECT 1v.date as date_1v, " +
+                 "4v.date as date_4v, 4v.x_srm_error_message as x_srm_error_message_4v, 4v.carteId as carteId_4v, 4v.content_name as content_name_4v, 1v.content_type as content_type_1v " +
+                 "FROM srmTunningStartSession4V6v6S6CModel 4v " +
+                 "LEFT JOIN srmSetup1vModel 1v " +
+                 "ON 1v.content_name = 4v.content_name and 1v.carteId = 4v.carteId " +
+                 "and unix_timestamp(4v.date, \"yyyy-MM-dd HH:mm:ss.SSS\") >= unix_timestamp(1v.date, \"yyyy-MM-dd HH:mm:ss.SSS\" ) " +
+                 "where 4v.error = \"true\" and 4v.content_name rlike '^[A-Z].*' " +
+                 ") errors " +
+                 "GROUP BY date_4v, x_srm_error_message_4v, carteId_4v, content_name_4v, content_type_1v ")
+                 .repartition(1);
 
          sqlDF.show();
-         sqlDF.write().csv("C:\\temp\\result2.csv");
+         sqlDF.write().csv("C:\\temp\\result.csv");
+
+/*
+         sqlDF.show();
+         sqlDF.write().csv("C:\\temp\\result4.csv");
+*/
 
      }
 

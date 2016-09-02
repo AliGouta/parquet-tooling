@@ -1,0 +1,28 @@
+For Error like:
+
+-MasterSession not found for UUID: d7fcd62b-faf9-4154-b2fb-4f13ff5c8bc9 => We do not have the clientId
+-When hitting the issue Not Enough Bandwidth, We do not know if the content is catchup or VoD
+
+-Aucun moyen de pouvoir joindre les Not Enough Bw avec les sessions cactchup ! pareil pour VoD => traiter les NEB tout seul,
+Pas possible de joindre 4v6c6s (qui contient le contenu qui est entrain d'etre regarder) avec le workflow qui traite les erreurs de la bw (snmp4vall) => ClientId n'est pas un champ en commun !!!
+
+
+
+
+
+
+
+
+
+2016-07-23 18:56:49,133 INFO  [com.nagra.multiscreen.srm.service.gateway.rtsp.handler.RtspSetupMethodHandler] (inbound-logic-worker-125179:) Request Failed: TimeableRequest(chunked: false)
+SETUP rtsp://localhost:8184/NEO00151887.ts?definition=SD RTSP/1.0
+Transport: MP2T/DVBC/QAM;unicast;client=30183.201.2179764038
+User-Agent: NC-UGC
+CSeq: 1
+
+Returning Response: TimeableResponse(chunked: false)
+RTSP/1.0 453 Not Enough Bandwidth
+CSeq: 1
+x-srm-error-status: UPSTREAM_ERROR
+x-srm-error-code: SRM-1001
+x-srm-error-message: Not Enough Bandwidth

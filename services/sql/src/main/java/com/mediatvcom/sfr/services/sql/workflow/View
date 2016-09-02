@@ -1,29 +1,48 @@
-3aus1vus.date_1vus as date_1vus_3aus, 3av.date as date_3av, 3av.port_rfgw as port_rfgw_3av, 3av.ip_rfgw as ip_rfgw_3av, " +
-                 "3av.content_name as content_name_3av, 3av.carteId as carteId_3av, 3av.streamer as streamer_3av, " +
-                 "3v.date as date_3v, 3v.session_id as sessionId_3v, 3v.client_id as client_id_3v, " +
-                 "date_min_4v, tsid_4v, svcid_4v, content_type_4v, " +
-                 "5v.vip as vip_5v, 5v.content_name as content_name_5v, 5v.content_type as content_type_5v, " +
-                 "7v.date as date_7v, 7v.session_id as sessionId_7v, " +
-                 "3auscommon.service_group_rx_common as service_group_rx_common, 3auscommon.mode_rx_3aus as mode_rx_3aus_common " +
-
+Vod:
+---
 
 Vod Success:
+
+date_3aus, port_rfgw, ip_rfgw, content_name, carteId, streamer, client_id, date_end, service_group_rx_common, bitrate_rx, mode_rx_3aus, content_type
 
 date_1vus_3aus, 3av.port_rfgw as port_rfgw_3av, 3av.ip_rfgw as ip_rfgw_3av, 3av.content_name as content_name_3av, 3av.carteId as carteId_3av, 3av.streamer as streamer_3av, 3v.client_id as client_id_3v
 5v.content_type as content_type_5v, 7v.date as date_7v, 3auscommon.service_group_rx_common as service_group_rx_common, 3auscommon.mode_rx_3aus as mode_rx_3aus_common
 
 
+Errors (w/o bw) For both VoD and Catchup :
 
-         Dataset<Row> sqlDF = spark.sql("SELECT MIN(date_1v) as date_1v_gr, date_4v as date_4v_gr, x_srm_error_message_4v as x_srm_error_message_4v_gr, " +
-                                        "carteId_4v as carteId_4v_gr, content_name_4v as content_name_4v_gr " +
-                    "FROM ( " +
-                        "SELECT 1v.date as date_1v, " +
-                        "4v.date as date_4v, 4v.x_srm_error_message as x_srm_error_message_4v, 4v.carteId as carteId_4v, 4v.content_name as content_name_4v " +
-                        "FROM srmTunningStartSession4V6v6S6CModel 4v " +
-                        "LEFT JOIN srmSetup1vModel 1v " +
-                        "ON 1v.content_name = 4v.content_name and 1v.carteId = 4v.carteId " +
-                        "and unix_timestamp(4v.date, \"yyyy-MM-dd HH:mm:ss.SSS\") >= unix_timestamp(1v.date, \"yyyy-MM-dd HH:mm:ss.SSS\" ) " +
-                        "where 4v.error = \"true\" and 4v.content_name rlike '^[A-Z].*' " +
-                    ") errors " +
-                    "GROUP BY date_4v, x_srm_error_message_4v, carteId_4v, content_name_4v ")
-                 .repartition(1);
+date_4v, content_type, xxxxxxxx, xxxxxxxxxx, content_name_4v, carteId_4v, xxxxxxxxx, xxxxxxxxx, xxxxxxxxx, xxxxxxxxxx, xxxxxxxx, xxxxxxxx
+4v.date as date_4v, 4v.x_srm_error_message as x_srm_error_message_4v, 4v.carteId as carteId_4v, 4v.content_name as content_name_4v
+
+
+Catchup:
+
+Catchup Sucess:
+
+date_3aus, port_rfgw, ip_rfgw, content_name, carteId, streamer, client_id, date_end, service_group_rx_common, bitrate_rx, mode_rx_3aus, content_type
+
+date_rx_catchupok, port_rfgw_rx_catchupok, ip_rfgw_rx_catchupok, content_name_4c_catchupok, carteId_4c_catchupok, xxxxx, client_id_4c_catchupok, date_end, service_group_rx_catchupok,
+bitrate_rx_catchupok, mode_rx, content_type_sfr
+
+
+Errors 0c (File not Found) :
+date, xxxxxxxx, xxxxxxxx, content_name, carteId, nit, content_type
+
+date, xxxxxxxx, xxxxxxxx, content_name, carteId, xxxxxxxx, xxxxxxxx, xxxxxxxx, xxxxxxxx, xxxxxxxx, xxxxxxxx, content_type
+
+
+Rest of Errors 1c (bw (453 carte ..), ..) :
+
+date, error type, content_type
+
+date, xxxxxxxx, xxxxxxxx, xxxxxxxx, xxxxxxxx, xxxxxxxx, xxxxxxxx, xxxxxxxx, xxxxxxxx, bitrate_rx, mode_rx_3aus, content_type
+
+
+bw:
+
+Common:
+
+4verrors.date_rx, 4verrors.bitrate_rx, 4verrors.service_group_rx, 4verrors.ip_rfgw_rx, 4verrors.port_rfgw_rx, 4verrors.service_group_detail_rx, " +
+                 "4verrors.code_http_tx, snmp4v.date_down_4vbw, snmp4v.date_up_4vbw, 4verrors.ondemand_session_id_rx, " +
+                 "if (snmp4v.ondemand_session_id_rx_4v_4vbw = 4verrors.ondemand_session_id_rx, \"SRM Disconnected From USRM\", \"Not Enough Bandwidth\") as real_error_bw " +
+
