@@ -2,47 +2,30 @@ Vod:
 ---
 
 Vod Success:
-
-date_3aus, port_rfgw, ip_rfgw, content_name, carteId, streamer, client_id, date_end, service_group_rx_common, bitrate_rx, mode_rx_3aus, content_type
-
-date_1vus_3aus, 3av.port_rfgw as port_rfgw_3av, 3av.ip_rfgw as ip_rfgw_3av, 3av.content_name as content_name_3av, 3av.carteId as carteId_3av, 3av.streamer as streamer_3av, 3v.client_id as client_id_3v
-5v.content_type as content_type_5v, 7v.date as date_7v, 3auscommon.service_group_rx_common as service_group_rx_common, 3auscommon.mode_rx_3aus as mode_rx_3aus_common
-
-
-Errors (w/o bw) For both VoD and Catchup :
-
-date_4v, content_type, xxxxxxxx, xxxxxxxxxx, content_name_4v, carteId_4v, xxxxxxxxx, xxxxxxxxx, xxxxxxxxx, xxxxxxxxxx, xxxxxxxx, xxxxxxxx
-4v.date as date_4v, 4v.x_srm_error_message as x_srm_error_message_4v, 4v.carteId as carteId_4v, 4v.content_name as content_name_4v
-
+date, xxxxxxxx, content_type, content_name, streamer, bitrate_rx, service_group, port_rfgw, ip_rfgw, client_id, carteId, date_end, sessionId, mode_rx, code_http, xxxxxx, xxxxxx
 
 Catchup:
+-------
 
 Catchup Sucess:
-
-date_3aus, port_rfgw, ip_rfgw, content_name, carteId, streamer, client_id, date_end, service_group_rx_common, bitrate_rx, mode_rx_3aus, content_type
-
-date_rx_catchupok, port_rfgw_rx_catchupok, ip_rfgw_rx_catchupok, content_name_4c_catchupok, carteId_4c_catchupok, xxxxx, client_id_4c_catchupok, date_end, service_group_rx_catchupok,
-bitrate_rx_catchupok, mode_rx, content_type_sfr
-
+date, date_start_video, content_type, content_name, streamer, bitrate_rx, service_group, port_rfgw, ip_rfgw, client_id, carteId, date_end, sessionId, mode_rx, code_http, xxxxxx, ondemand_session_id
 
 Errors 0c (File not Found) :
-date, xxxxxxxx, xxxxxxxx, content_name, carteId, nit, content_type
-
-date, xxxxxxxx, xxxxxxxx, content_name, carteId, xxxxxxxx, xxxxxxxx, xxxxxxxx, xxxxxxxx, xxxxxxxx, xxxxxxxx, content_type
+date, xxxxxxxx, content_type, content_name, xxxxxxxx, xxxxxxxx, xxxxxxxx, xxxxxxxx, xxxxxxxx, xxxxxxxx, carteId, xxxxxxxx, xxxxxxxx, xxxxxxxx, code_http, xxxxxxxx, xxxxxxxx
 
 
 Rest of Errors 1c (bw (453 carte ..), ..) :
-
-date, error type, content_type
-
-date, xxxxxxxx, xxxxxxxx, xxxxxxxx, xxxxxxxx, xxxxxxxx, xxxxxxxx, xxxxxxxx, xxxxxxxx, bitrate_rx, mode_rx_3aus, content_type
+date, xxxxxxxx, content_type, content_name, xxxxxxxx, xxxxxxxx, xxxxxxxx, xxxxxxxx, xxxxxxxx, xxxxxxxx, xxxxxxxx, xxxxxxxx, xxxxxxxx, xxxxxxxx, code_http, xxxxxxxx, xxxxxxxx
 
 
-bw:
+common 4 vod and catchup:
+------------------------
 
-Common:
+Errors (w/o bw) For both VoD and Catchup :
+date, xxxxxxxx, content_type, content_name, xxxxxxxx, xxxxxxxxxx, xxxxxxxxx, xxxxxxxxx, xxxxxxxxx, xxxxxxxxx, carteId, xxxxxxxxxx, xxxxxxxx, xxxxxxxx, code_http, x_srm_error_message, ondemand_session_id
 
-4verrors.date_rx, 4verrors.bitrate_rx, 4verrors.service_group_rx, 4verrors.ip_rfgw_rx, 4verrors.port_rfgw_rx, 4verrors.service_group_detail_rx, " +
-                 "4verrors.code_http_tx, snmp4v.date_down_4vbw, snmp4v.date_up_4vbw, 4verrors.ondemand_session_id_rx, " +
-                 "if (snmp4v.ondemand_session_id_rx_4v_4vbw = 4verrors.ondemand_session_id_rx, \"SRM Disconnected From USRM\", \"Not Enough Bandwidth\") as real_error_bw " +
 
+bw-errors:
+---------
+
+date, bitrate_rx, service_group, ip_rfgw, port_rfgw, service_group, code_http, date_down, date_up, ondemand_session_id, bw_real_error

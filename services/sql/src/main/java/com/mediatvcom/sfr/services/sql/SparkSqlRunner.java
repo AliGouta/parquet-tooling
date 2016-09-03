@@ -1,7 +1,9 @@
 package com.mediatvcom.sfr.services.sql;
 
 import com.beust.jcommander.Parameter;
+import com.mediatvcom.sfr.services.sql.workflow.BwErrors;
 import com.mediatvcom.sfr.services.sql.workflow.CatchupWorkflow;
+import com.mediatvcom.sfr.services.sql.workflow.NumericableVoDCatchup;
 import com.mediatvcom.sfr.services.sql.workflow.VodWorkflow;
 import org.apache.spark.sql.SparkSession;
 
@@ -17,7 +19,7 @@ public class SparkSqlRunner {
     @Parameter(names = "--src-path", description = "the root path where Csv files are located", required = true)
     String rootCsv = "C:\\Users\\agouta\\Desktop\\output.tar\\output";
     @Parameter(names = "--content-type", description = "Might be either vod, catch-up or Sdv", required = true)
-    String contentType = "catchup";
+    String contentType = "bw-errors";
 
 
     public static void main(String[] args) {
@@ -36,6 +38,12 @@ public class SparkSqlRunner {
         }
         else if (contentType.equals("catchup")){
             new CatchupWorkflow(spark, rootCsv, day).runWorkflow();
+        }
+        else if (contentType.equals("vodcatchupall")){
+            new NumericableVoDCatchup(spark, rootCsv, day).runWorkflow();
+        }
+        else if (contentType.equals("bw-errors")){
+            new BwErrors(spark, rootCsv, day).runWorkflow();
         }
         else if (contentType.equals("sdv")){
             //new SdvWorkflow(spark, rootCsv, day);

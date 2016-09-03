@@ -1,0 +1,34 @@
+         SnmpTransfrom snmpTransfrom = new SnmpTransfrom(df_usrmSnmpModel);
+
+         Dataset<Row> snmpTransformedDF = spark.createDataFrame(snmpTransfrom.getRowSnmpTransformedRDD(), usrmTransformedSnmpModel.getSchema());
+
+         snmpTransformedDF.createOrReplaceTempView("snmp_transformed");
+
+         Dataset<Row> sql4verrorDF = spark.sql("SELECT rx.date as date_rx, rx.ondemand_session_id as ondemand_session_id_rx, " +
+                 "rx.bitrate as bitrate_rx, rx.service_group as service_group_rx, regexp_extract(rx.service_group,\"(.+?_U).*\",1) as service_group_detail_rx, rx.ip_rfgw as ip_rfgw_rx, " +
+                 "rx.port_rfgw as port_rfgw_rx, rx.mode as mode_rx, tx.code_http as code_http_tx, tx.cseq as cseq_tx " +
+                 "FROM usrm_vermserver_rx rx " +
+                 "LEFT JOIN usrm_vermserver_tx tx " +
+                 "ON rx.ondemand_session_id = tx.ondemand_session_id " +
+                 "where rx.mode = \"unicast\" and tx.code = \"error\" and tx.code_http = \"453 Not Enough Bandwidth\" " ).cache();
+
+         sql4verrorDF.createOrReplaceTempView("4verrors");
+
+         Dataset<Row> sqlsnmpDF = spark.sql(" SELECT snmptf.date_down as date_down_4vbw, snmptf.date_up as date_up_4vbw, " +
+                 "4verrors.ondemand_session_id_rx as ondemand_session_id_rx_4v_4vbw " +
+                 "FROM snmp_transformed snmptf " +
+                 "LEFT JOIN 4verrors " +
+                 "WHERE snmptf.rfgw_id = 4verrors.service_group_detail_rx " +
+                 "and unix_timestamp(4verrors.date_rx, \"yyyy-MM-dd HH:mm:ss.SSS\") >= unix_timestamp(snmptf.date_down, \"yyyy-MM-dd HH:mm:ss.SSS\" ) " +
+                 "and unix_timestamp(4verrors.date_rx, \"yyyy-MM-dd HH:mm:ss.SSS\") < unix_timestamp(snmptf.date_up, \"yyyy-MM-dd HH:mm:ss.SSS\" )" ).cache();
+
+         sqlsnmpDF.createOrReplaceTempView("snmp4v");
+
+         Dataset<Row> sqlbwDF = spark.sql("SELECT 4verrors.date_rx as date, 4verrors.bitrate_rx as bitrate_rx, " +
+                 "4verrors.service_group_rx as service_group, 4verrors.ip_rfgw_rx as ip_rfgw, 4verrors.port_rfgw_rx as port_rfgw, " +
+                 "4verrors.service_group_detail_rx as service_group, 4verrors.code_http_tx as code_http, " +
+                 "snmp4v.date_down_4vbw as date_down, snmp4v.date_up_4vbw as date_up, 4verrors.ondemand_session_id_rx as ondemand_session_id, " +
+                 "if (snmp4v.ondemand_session_id_rx_4v_4vbw = 4verrors.ondemand_session_id_rx, \"SRM Disconnected From USRM\", \"Not Enough Bandwidth\") as bw_real_error " +
+                 "FROM 4verrors " +
+                 "LEFT JOIN snmp4v " +
+                 "ON snmp4v.ondemand_session_id_rx_4v_4vbw = 4verrors.ondemand_session_id_rx ").repartition(1);

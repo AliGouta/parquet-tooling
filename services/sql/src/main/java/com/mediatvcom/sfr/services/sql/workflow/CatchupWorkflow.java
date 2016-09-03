@@ -125,7 +125,25 @@ public class CatchupWorkflow implements Serializable {
 
          df_srmSessionStart4cModel.createOrReplaceTempView("srmSessionStart4cModel");
 
-         Dataset<Row> sqlDF = spark.sql("SELECT rx.date as date_rx, 2v.date as date_2v, 2v.ondemand_session_id as ondemand_session_id_2v, " +
+         Dataset<Row> sql0cerrorDF = spark.sql("SELECT 0c.date as date,  NULL as date_start_video, 0c.content_type as content_type, " +
+                 "0c.content_name as content_name, NULL as streamer, NULL as bitrate_rx, NULL as service_group, " +
+                 "NULL as port_rfgw, NULL as ip_rfgw, NULL as client_id, 0c.carteId as carteId, NULL as date_end, " +
+                 "NULL as sessionId, NULL as mode_rx, 0c.code_http as code_http, NULL as x_srm_error_message, NULL as ondemand_session_id " +
+                 "FROM srmGetContent0cModel 0c " +
+                 "WHERE 0c.code_http != \"200 OK\" ").cache();
+
+         sql0cerrorDF.createOrReplaceTempView("cathup_0c_error");
+
+         Dataset<Row> sql1cerrorDF = spark.sql("SELECT 1c.date as date,  NULL as date_start_video, 1c.content_type as content_type, " +
+                 "NULL as content_name, NULL as streamer, NULL as bitrate_rx, NULL as service_group, " +
+                 "NULL as port_rfgw, NULL as ip_rfgw, NULL as client_id, NULL as carteId, NULL as date_end, " +
+                 "NULL as sessionId, NULL as mode_rx, 1c.code_http as code_http, NULL as x_srm_error_message, NULL as ondemand_session_id " +
+                 "FROM srmPostContent1cModel 1c " +
+                 "WHERE 1c.code_http != \"200 OK\" ").cache();
+
+         sql1cerrorDF.createOrReplaceTempView("cathup_1c_error");
+
+         Dataset<Row> sqlcatchupDF = spark.sql("SELECT rx.date as date_rx, 2v.date as date_2v, 2v.ondemand_session_id as ondemand_session_id_2v, " +
                  "2v.code_http as code_http_2v, rx.bitrate as bitrate_rx, rx.service_group as service_group_rx, rx.ip_rfgw as ip_rfgw_rx, " +
                  "rx.port_rfgw as port_rfgw_rx, rx.mode as mode_rx, " +
                  "tjoin.date_8c as date_8c_tj, tjoin.content_type as content_type_8c " +
@@ -137,24 +155,28 @@ public class CatchupWorkflow implements Serializable {
                  "JOIN ( SELECT Min(8c.date) as date_8c, 8c.ondemand_session_id as ondemand_session_id_8c, content_type " +
                  "from srmEnd8cModel 8c " +
                  "Group by ondemand_session_id, content_type) tjoin " +
-                 "ON rx.ondemand_session_id = tjoin.ondemand_session_id_8c " +
-                 "").repartition(1);
+                 "ON rx.ondemand_session_id = tjoin.ondemand_session_id_8c ").cache();
 
-         sqlDF.createOrReplaceTempView("cathup_success_session");
+         sqlcatchupDF.createOrReplaceTempView("cathup_success_session");
 
-         Dataset<Row> sqlcatchupDF = spark.sql("SELECT catchupok.date_rx as date_rx_catchupok, catchupok.bitrate_rx as bitrate_rx_catchupok, catchupok.service_group_rx as service_group_rx_catchupok, " +
-                         "catchupok.ip_rfgw_rx as ip_rfgw_rx_catchupok, catchupok.port_rfgw_rx as port_rfgw_rx_catchupok, " +
-                         "date as date_4c_catchupok, vip as vip_4c_catchupok, content_name as content_name_4c_catchupok, " +
-                         "content_type_8c as content_type_sfr, client_id as client_id_4c_catchupok, carteId as carteId_4c_catchupok, catchupok.ondemand_session_id_2v as ondemand_session_id_2v_catchupok, " +
-                         "date_8c_tj as date_end, catchupok.mode_rx as mode_rx " +
-                         "FROM cathup_success_session catchupok " +
-                         "LEFT JOIN srmSessionStart4cModel 4c " +
-                         "ON 4c.control_session = catchupok.ondemand_session_id_2v ").repartition(1);
+         Dataset<Row> sqlcatchupallDF = spark.sql("SELECT catchupok.date_rx as date, 4c.date as date_start_video, content_type_8c as content_type, content_name as content_name, NULL as streamer, " +
+                 "catchupok.bitrate_rx as bitrate_rx, catchupok.service_group_rx as service_group, " +
+                 "catchupok.port_rfgw_rx as port_rfgw, catchupok.ip_rfgw_rx as ip_rfgw, " +
+                 "client_id as client_id, carteId as carteId, date_8c_tj as date_end, NULL as sessionId, catchupok.mode_rx as mode_rx, " +
+                 "\"200 OK\" as code_http, NULL as x_srm_error_message, catchupok.ondemand_session_id_2v as ondemand_session_id " +
+                 "FROM cathup_success_session catchupok " +
+                 "LEFT JOIN srmSessionStart4cModel 4c " +
+                 "ON 4c.control_session = catchupok.ondemand_session_id_2v " +
+                 "UNION ALL " +
+                 "SELECT * " +
+                 "FROM cathup_0c_error " +
+                 "UNION ALL " +
+                 "SELECT * " +
+                 "FROM cathup_1c_error ").repartition(1);
 
 
-
-         sqlcatchupDF.show();
-         sqlcatchupDF.write().csv("C:\\temp\\resultc.csv");
+         sqlcatchupallDF.show();
+         sqlcatchupallDF.write().csv("C:\\temp\\resultc.csv");
     }
 
     private Dataset<Row> getDframe(String rootcsv, String logcomponent, String model, StructType schema, String day) {
