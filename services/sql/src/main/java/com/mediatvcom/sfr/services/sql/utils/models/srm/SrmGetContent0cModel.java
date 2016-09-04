@@ -21,12 +21,10 @@ public class SrmGetContent0cModel implements LogModel, Serializable {
     private final String modelName = "catchup_get_0c";
     private final String logComponent = "srm";
 
-    private final String date;
     private final String rootCsv;
 
-    public SrmGetContent0cModel(String day, String rootCsv) {
+    public SrmGetContent0cModel(String rootCsv) {
         schema = buildschema();
-        this.date = day;
         this.rootCsv = rootCsv;
     }
 

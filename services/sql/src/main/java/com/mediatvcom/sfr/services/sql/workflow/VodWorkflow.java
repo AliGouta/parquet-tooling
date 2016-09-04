@@ -9,6 +9,7 @@ import com.mediatvcom.sfr.services.sql.utils.models.usrm.UsrmVermserverRxModel;
 import com.mediatvcom.sfr.services.sql.utils.models.usrm.UsrmVermserverTxModel;
 import com.mediatvcom.sfr.services.sql.utils.udfs.*;
 import org.apache.commons.collections.iterators.ArrayListIterator;
+import org.apache.commons.collections.map.HashedMap;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.function.FlatMapFunction;
 import org.apache.spark.api.java.function.Function;
@@ -20,15 +21,22 @@ import org.apache.spark.sql.SparkSession;
 import org.apache.spark.sql.api.java.UDF1;
 import org.apache.spark.sql.api.java.UDF3;
 import org.apache.spark.sql.types.DataTypes;
+import org.apache.spark.sql.types.StringType;
 import org.apache.spark.sql.types.StructType;
 
 import java.io.Serializable;
 import java.util.*;
+import org.elasticsearch.spark.sql.api.java.JavaEsSparkSQL;
+//import org.elasticsearch.spark.sql.java.api.JavaEsSparkSQL;
+//java.api.JavaEsSpark SQL;
+
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import scala.Tuple2;
 import scala.Tuple3;
+import scala.collection.Seq;
+import scala.tools.asm.Type;
 
 import static org.apache.spark.sql.functions.*;
 
@@ -38,8 +46,7 @@ import static org.apache.spark.sql.functions.*;
 public class VodWorkflow implements Serializable {
 
     private final SparkSession spark;
-    private String rootCsv;
-    private String day;
+    List<String> dateRange;
 
     private final SrmSessionStart4cModel srmSessionStart4cModel;
     Dataset<Row> df_srmSessionStart4cModel;
@@ -74,36 +81,35 @@ public class VodWorkflow implements Serializable {
     Dataset<Row> df_usrmSnmpModel;
 
 
-    public VodWorkflow(SparkSession spark, String rootCsv, String day) {
+    public VodWorkflow(SparkSession spark, String rootCsv, List<String> daterange) {
         this.spark = spark;
-        this.rootCsv = rootCsv;
-        this.day = day;
+        this.dateRange = daterange;
 
-        this.srmSessionStart4cModel = new SrmSessionStart4cModel(day, rootCsv);
-        this.df_srmSessionStart4cModel = getDframe(srmSessionStart4cModel.getRootCsv(), srmSessionStart4cModel.getLogComponent(), srmSessionStart4cModel.getModelName(), srmSessionStart4cModel.getSchema(), day);
+        this.srmSessionStart4cModel = new SrmSessionStart4cModel(rootCsv);
+        this.df_srmSessionStart4cModel = getDframe(srmSessionStart4cModel.getRootCsv(), srmSessionStart4cModel.getLogComponent(), srmSessionStart4cModel.getModelName(), srmSessionStart4cModel.getSchema(), dateRange);
 
-        this.srmSetup1vModel = new SrmSetup1vModel(day, rootCsv);
-        this.srmRessource2v2cModel = new SrmRessource2v2cModel(day,rootCsv);
-        this.usrmSnmpModel    = new UsrmSnmpModel(day, rootCsv);
-        this.usrmTransformedSnmpModel = new UsrmTransformedSnmpModel(day, rootCsv);
-        this.usrmVermserverRxModel = new UsrmVermserverRxModel(day, rootCsv);
-        this.usrmVermserverTxModel  = new UsrmVermserverTxModel(day, rootCsv);
-        this.streamerModel = new StreamerModel(day, rootCsv);
-        this.srmSessionId3v5cModel = new SrmSessionId3v5cModel(day,rootCsv);
-        this.srmTunningStartSession4V6v6S6CModel = new SrmTunningStartSession4v6v6s6cModel(day, rootCsv);
-        this.srmSessionStart5vModel = new SrmSessionStart5vModel(day, rootCsv);
-        this.srmEnd7v7cModel  = new SrmEnd7v7cModel(day, rootCsv);
+        this.srmSetup1vModel = new SrmSetup1vModel(rootCsv);
+        this.srmRessource2v2cModel = new SrmRessource2v2cModel(rootCsv);
+        this.usrmSnmpModel    = new UsrmSnmpModel(rootCsv);
+        this.usrmTransformedSnmpModel = new UsrmTransformedSnmpModel(rootCsv);
+        this.usrmVermserverRxModel = new UsrmVermserverRxModel(rootCsv);
+        this.usrmVermserverTxModel  = new UsrmVermserverTxModel(rootCsv);
+        this.streamerModel = new StreamerModel(rootCsv);
+        this.srmSessionId3v5cModel = new SrmSessionId3v5cModel(rootCsv);
+        this.srmTunningStartSession4V6v6S6CModel = new SrmTunningStartSession4v6v6s6cModel(rootCsv);
+        this.srmSessionStart5vModel = new SrmSessionStart5vModel(rootCsv);
+        this.srmEnd7v7cModel  = new SrmEnd7v7cModel(rootCsv);
 
-        this.df_srmSetup1vModel = getDframe(srmSetup1vModel.getRootCsv(), srmSetup1vModel.getLogComponent(), srmSetup1vModel.getModelName(),srmSetup1vModel.getSchema(), day);
-        this.df_srmRessource2v2cModel = getDframe(srmRessource2v2cModel.getRootCsv(), srmRessource2v2cModel.getLogComponent(), srmRessource2v2cModel.getModelName(),srmRessource2v2cModel.getSchema(), day);
-        this.df_usrmSnmpModel = getDframe(usrmSnmpModel.getRootCsv(), usrmSnmpModel.getLogComponent(), usrmSnmpModel.getModelName(),usrmSnmpModel.getSchema(), day);
-        this.df_usrm_vermserver_rx = getDframe(usrmVermserverRxModel.getRootCsv(), usrmVermserverRxModel.getLogComponent(), usrmVermserverRxModel.getModelName(), usrmVermserverRxModel.getSchema(), day);
-        this.df_usrm_vermserver_tx = getDframe(usrmVermserverTxModel.getRootCsv(), usrmVermserverTxModel.getLogComponent(), usrmVermserverTxModel.getModelName(), usrmVermserverTxModel.getSchema(), day);
-        this.df_streamerModel    = getDframe(streamerModel.getRootCsv(), streamerModel.getLogComponent(), streamerModel.getModelName(), streamerModel.getSchema(), day);
-        this.df_srmSessionId3v5cModel = getDframe(srmSessionId3v5cModel.getRootCsv(), srmSessionId3v5cModel.getLogComponent(), srmSessionId3v5cModel.getModelName(), srmSessionId3v5cModel.getSchema(), day);
-        this.df_srmTunningStartSession4v6v4s6cModel = getDframe(srmTunningStartSession4V6v6S6CModel.getRootCsv(), srmTunningStartSession4V6v6S6CModel.getLogComponent(), srmTunningStartSession4V6v6S6CModel.getModelName(), srmTunningStartSession4V6v6S6CModel.getSchema(), day);
-        this.df_srmSessionStart5vModel = getDframe(srmSessionStart5vModel.getRootCsv(), srmSessionStart5vModel.getLogComponent(), srmSessionStart5vModel.getModelName(), srmSessionStart5vModel.getSchema(), day);
-        this.df_srmEnd7v7cModel    = getDframe(srmEnd7v7cModel.getRootCsv(), srmEnd7v7cModel.getLogComponent(), srmEnd7v7cModel.getModelName(),srmEnd7v7cModel.getSchema(), day);
+        this.df_srmSetup1vModel = getDframe(srmSetup1vModel.getRootCsv(), srmSetup1vModel.getLogComponent(), srmSetup1vModel.getModelName(),srmSetup1vModel.getSchema(), dateRange);
+        this.df_srmRessource2v2cModel = getDframe(srmRessource2v2cModel.getRootCsv(), srmRessource2v2cModel.getLogComponent(), srmRessource2v2cModel.getModelName(),srmRessource2v2cModel.getSchema(), dateRange);
+        this.df_usrmSnmpModel = getDframe(usrmSnmpModel.getRootCsv(), usrmSnmpModel.getLogComponent(), usrmSnmpModel.getModelName(),usrmSnmpModel.getSchema(), dateRange);
+        this.df_usrm_vermserver_rx = getDframe(usrmVermserverRxModel.getRootCsv(), usrmVermserverRxModel.getLogComponent(), usrmVermserverRxModel.getModelName(), usrmVermserverRxModel.getSchema(), dateRange);
+        this.df_usrm_vermserver_tx = getDframe(usrmVermserverTxModel.getRootCsv(), usrmVermserverTxModel.getLogComponent(), usrmVermserverTxModel.getModelName(), usrmVermserverTxModel.getSchema(), dateRange);
+        this.df_streamerModel    = getDframe(streamerModel.getRootCsv(), streamerModel.getLogComponent(), streamerModel.getModelName(), streamerModel.getSchema(), dateRange);
+        this.df_srmSessionId3v5cModel = getDframe(srmSessionId3v5cModel.getRootCsv(), srmSessionId3v5cModel.getLogComponent(), srmSessionId3v5cModel.getModelName(), srmSessionId3v5cModel.getSchema(), dateRange);
+        this.df_srmTunningStartSession4v6v4s6cModel = getDframe(srmTunningStartSession4V6v6S6CModel.getRootCsv(), srmTunningStartSession4V6v6S6CModel.getLogComponent(), srmTunningStartSession4V6v6S6CModel.getModelName(), srmTunningStartSession4V6v6S6CModel.getSchema(), dateRange);
+        this.df_srmSessionStart5vModel = getDframe(srmSessionStart5vModel.getRootCsv(), srmSessionStart5vModel.getLogComponent(), srmSessionStart5vModel.getModelName(), srmSessionStart5vModel.getSchema(), dateRange);
+        this.df_srmEnd7v7cModel    = getDframe(srmEnd7v7cModel.getRootCsv(), srmEnd7v7cModel.getLogComponent(), srmEnd7v7cModel.getModelName(),srmEnd7v7cModel.getSchema(), dateRange);
 
     }
 
@@ -148,7 +154,42 @@ public class VodWorkflow implements Serializable {
 
          SnmpTransfrom snmpTransfrom = new SnmpTransfrom(df_usrmSnmpModel);
 
+
+         System.out.println(dateRange.get(0));
+
+         Dataset<Row> sqlDF = spark.sql("SELECT t3av.date_normal as date_normal, t3av.date_3av as date_3av," +
+                 " t3av.streamer_3av as streamer_3av, 3v.date as date_3v, t3av.url_3av as url_3av " +
+                 "From (" +
+                 " SELECT 3av.date as date_normal, unix_timestamp(3av.date, \"yyyy-MM-dd HH:mm:ss.SSSSSS\") as date_3av, " +
+                    "3av.streamer as streamer_3av, 3av.cseq as cseq_3av,  3av.url as url_3av " +
+                    "FROM  streamerModel 3av " +
+                    "WHERE to_date(3av.date) = to_date( " + "\"" + dateRange.get(0) + "\"" + " ) " +
+                 ") t3av " +
+                 "LEFT JOIN srmSessionId3v5cModel 3v " +
+                 "ON t3av.cseq_3av = 3v.cseq ");
+
+
+         sqlDF.printSchema();
+
+         /*, 3v.date as date_3v
+                 "From streamerModel 3av " +
+                 "LEFT JOIN srmSessionId3v5cModel 3v " +
+                 "ON 3av.cseq = 3v.cseq and 3av.date < 2016-07-08 ");
+                 unix_timestamp(3av.date, "yyyy-MM-dd HH:mm:ss.SSSSSS").cast("timestamp")
+*/
+
+         /*
+         Map<String, String> cfg = new HashedMap();
+         cfg.put("es.nodes", "10.1.1.157");
+         cfg.put("es.port", "9200");
+         cfg.put("es.resource", "vodcatchup");
+
+         JavaEsSparkSQL.saveToEs(sqlDF4v, cfg);
+
+  */
+
          // , cseq should be removed since it is somtimes set to some value!
+         /*
          Dataset<Row> sqlDF4v = spark.sql("SELECT MIN(date) as date_min_4v, MAX(date) as date_max_4v, " +
                  "4v.session_id as sessionId_4v, " +
                  "tsid as tsid_4v, svcid as svcid_4v, " +
@@ -236,31 +277,38 @@ public class VodWorkflow implements Serializable {
                  "select * " +
                  "FROM DF1 ").repartition(1);
 
-         //sqlerrorDF.unionAll(sqlDF);
-
-
-         //sqlerrorDF.createOrReplaceTempView("allvods");
-
-         //Dataset<Row> sqlerrorkkkDF = spark.sql(" select * from allvods ");
-
          sqlerrorDF.show();
          sqlerrorDF.write().csv("C:\\temp\\result-all-errors.csv");
-
-/*
-         sqlDF.show();
-         sqlDF.write().csv("C:\\temp\\result4.csv");
 */
+
+         sqlDF.show();
+         sqlDF.write().csv("C:\\temp\\result.csv");
+
 
      }
 
-    private Dataset<Row> getDframe(String rootcsv, String logcomponent, String model, StructType schema, String day) {
-        String filename = rootcsv + "\\output_logstash\\"+ logcomponent +"\\"+ model + "\\" + day + "\\data.csv";
+    private Dataset<Row> getDframe(String rootcsv, String logcomponent, String model, StructType schema, List<String> daterange) {
+
+        String[] files = getFilePaths(rootcsv, logcomponent, model, daterange);
+
         return spark.read()
                 .format("csv")
                 .option("header", "false")
                 .option("delimiter", ";")
                 .option("nullValue", "\"\"")
                 .schema(schema)
-                .load(filename);
+                .csv(files);
+
+    }
+
+    private String[] getFilePaths(String rootcsv, String logcomponent, String model, List<String> daterange) {
+        int ldays = daterange.size();
+        String[] files = new String[ldays];
+        int i=0;
+        for (String day : daterange){
+            files[i] = rootcsv + "\\output_logstash\\"+ logcomponent +"\\"+ model + "\\" + day + "\\data.csv";
+            i++;
+        }
+        return files;
     }
 }

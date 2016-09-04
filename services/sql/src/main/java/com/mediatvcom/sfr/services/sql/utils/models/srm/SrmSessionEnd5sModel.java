@@ -20,12 +20,10 @@ import java.util.List;
         private final String modelName = "sdv_session-end_5s";
         private final String logComponent = "srm";
 
-        private final String date;
         private final String rootCsv;
 
-        public SrmSessionEnd5sModel(String day, String rootCsv) {
+        public SrmSessionEnd5sModel(String rootCsv) {
             schema = buildschema();
-            this.date = day;
             this.rootCsv = rootCsv;
         }
 

@@ -21,12 +21,10 @@ public class SrmEnd8cModel implements LogModel, Serializable {
     private final String modelName = "catchup_end_8c";
     private final String logComponent = "srm";
 
-    private final String date;
     private final String rootCsv;
 
-    public SrmEnd8cModel(String day, String rootCsv) {
+    public SrmEnd8cModel(String rootCsv) {
         schema = buildschema();
-        this.date = day;
         this.rootCsv = rootCsv;
     }
 

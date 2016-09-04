@@ -21,12 +21,10 @@ public class StreamerModel implements LogModel, Serializable {
     private final String modelName = "setupPlayer";
     private final String logComponent = "streamer";
 
-    private final String date;
     private final String rootCsv;
 
-    public StreamerModel(String day, String rootCsv) {
+    public StreamerModel(String rootCsv) {
         schema = buildschema();
-        this.date = day;
         this.rootCsv = rootCsv;
     }
 

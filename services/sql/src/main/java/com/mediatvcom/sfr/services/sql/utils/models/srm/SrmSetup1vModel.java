@@ -21,12 +21,10 @@ public class SrmSetup1vModel implements LogModel, Serializable {
     private final String modelName = "vod_setup_1v";
     private final String logComponent = "srm";
 
-    private final String date;
     private final String rootCsv;
 
-    public SrmSetup1vModel(String day, String rootCsv) {
+    public SrmSetup1vModel(String rootCsv) {
         schema = buildschema();
-        this.date = day;
         this.rootCsv = rootCsv;
     }
 

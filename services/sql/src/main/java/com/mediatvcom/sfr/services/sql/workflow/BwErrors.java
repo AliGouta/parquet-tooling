@@ -14,6 +14,7 @@ import org.apache.spark.sql.types.DataTypes;
 import org.apache.spark.sql.types.StructType;
 
 import java.io.Serializable;
+import java.util.List;
 
 import static org.apache.spark.sql.functions.callUDF;
 import static org.apache.spark.sql.functions.lit;
@@ -24,8 +25,7 @@ import static org.apache.spark.sql.functions.lit;
 public class BwErrors implements Serializable {
 
     private final SparkSession spark;
-    private String rootCsv;
-    private String day;
+    List<String> dateRange;
 
     /*
     Models used by the VoD Workflow
@@ -46,19 +46,19 @@ public class BwErrors implements Serializable {
     Dataset<Row> df_usrmSnmpModel;
 
 
-    public BwErrors(SparkSession spark, String rootCsv, String day) {
+    public BwErrors(SparkSession spark, String rootCsv, List<String> daterange) {
         this.spark = spark;
-        this.rootCsv = rootCsv;
-        this.day = day;
+        this.dateRange = daterange;
 
-        this.usrmSnmpModel    = new UsrmSnmpModel(day, rootCsv);
-        this.usrmTransformedSnmpModel = new UsrmTransformedSnmpModel(day, rootCsv);
-        this.usrmVermserverRxModel = new UsrmVermserverRxModel(day, rootCsv);
-        this.usrmVermserverTxModel  = new UsrmVermserverTxModel(day, rootCsv);
 
-        this.df_usrmSnmpModel = getDframe(usrmSnmpModel.getRootCsv(), usrmSnmpModel.getLogComponent(), usrmSnmpModel.getModelName(),usrmSnmpModel.getSchema(), day);
-        this.df_usrm_vermserver_rx = getDframe(usrmVermserverRxModel.getRootCsv(), usrmVermserverRxModel.getLogComponent(), usrmVermserverRxModel.getModelName(), usrmVermserverRxModel.getSchema(), day);
-        this.df_usrm_vermserver_tx = getDframe(usrmVermserverTxModel.getRootCsv(), usrmVermserverTxModel.getLogComponent(), usrmVermserverTxModel.getModelName(), usrmVermserverTxModel.getSchema(), day);
+        this.usrmSnmpModel    = new UsrmSnmpModel(rootCsv);
+        this.usrmTransformedSnmpModel = new UsrmTransformedSnmpModel(rootCsv);
+        this.usrmVermserverRxModel = new UsrmVermserverRxModel(rootCsv);
+        this.usrmVermserverTxModel  = new UsrmVermserverTxModel(rootCsv);
+
+        this.df_usrmSnmpModel = getDframe(usrmSnmpModel.getRootCsv(), usrmSnmpModel.getLogComponent(), usrmSnmpModel.getModelName(),usrmSnmpModel.getSchema(), dateRange);
+        this.df_usrm_vermserver_rx = getDframe(usrmVermserverRxModel.getRootCsv(), usrmVermserverRxModel.getLogComponent(), usrmVermserverRxModel.getModelName(), usrmVermserverRxModel.getSchema(), dateRange);
+        this.df_usrm_vermserver_tx = getDframe(usrmVermserverTxModel.getRootCsv(), usrmVermserverTxModel.getLogComponent(), usrmVermserverTxModel.getModelName(), usrmVermserverTxModel.getSchema(), dateRange);
 
     }
 
@@ -107,14 +107,28 @@ public class BwErrors implements Serializable {
 
      }
 
-    private Dataset<Row> getDframe(String rootcsv, String logcomponent, String model, StructType schema, String day) {
-        String filename = rootcsv + "\\output_logstash\\"+ logcomponent +"\\"+ model + "\\" + day + "\\data.csv";
+    private Dataset<Row> getDframe(String rootcsv, String logcomponent, String model, StructType schema, List<String> daterange) {
+
+        String[] files = getFilePaths(rootcsv, logcomponent, model, daterange);
+
         return spark.read()
                 .format("csv")
                 .option("header", "false")
                 .option("delimiter", ";")
                 .option("nullValue", "\"\"")
                 .schema(schema)
-                .load(filename);
+                .csv(files);
     }
+
+    private String[] getFilePaths(String rootcsv, String logcomponent, String model, List<String> daterange) {
+        int ldays = daterange.size();
+        String[] files = new String[ldays];
+        int i=0;
+        for (String day : daterange){
+            files[i] = rootcsv + "\\output_logstash\\"+ logcomponent +"\\"+ model + "\\" + day + "\\data.csv";
+            i++;
+        }
+        return files;
+    }
+
 }

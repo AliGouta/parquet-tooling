@@ -9,7 +9,6 @@ public interface LogModel {
 
     public String getModelName();
     public StructType getSchema();
-    public String getDate();
     public String getRootCsv();
     public String getLogComponent();
 

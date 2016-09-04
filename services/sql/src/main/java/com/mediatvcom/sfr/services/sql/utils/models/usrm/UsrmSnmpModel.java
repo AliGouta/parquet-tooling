@@ -21,12 +21,10 @@ public class UsrmSnmpModel implements LogModel, Serializable {
     private final String modelName = "usrm_snmp";
     private final String logComponent = "usrm";
 
-    private final String date;
     private final String rootCsv;
 
-    public UsrmSnmpModel(String day, String rootCsv) {
+    public UsrmSnmpModel(String rootCsv) {
         schema = buildschema();
-        this.date = day;
         this.rootCsv = rootCsv;
     }
 

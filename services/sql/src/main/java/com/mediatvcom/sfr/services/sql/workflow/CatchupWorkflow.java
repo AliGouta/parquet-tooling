@@ -14,6 +14,7 @@ import org.apache.spark.sql.types.DataTypes;
 import org.apache.spark.sql.types.StructType;
 
 import java.io.Serializable;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -25,8 +26,7 @@ import static org.apache.spark.sql.functions.*;
 public class CatchupWorkflow implements Serializable {
 
     private final SparkSession spark;
-    private String rootCsv;
-    private String day;
+    List<String> dateRange;
 
     /*
     Models used by the VoD Workflow
@@ -61,32 +61,31 @@ public class CatchupWorkflow implements Serializable {
     Dataset<Row> df_srmEnd8cModel;
 
 
-    public CatchupWorkflow(SparkSession spark, String rootCsv, String day) {
+    public CatchupWorkflow(SparkSession spark, String rootCsv, List<String> daterange) {
         this.spark = spark;
-        this.rootCsv = rootCsv;
-        this.day = day;
+        this.dateRange = daterange;
 
-        this.srmGetContent0cModel = new SrmGetContent0cModel(day,rootCsv);
-        this.srmPostContent1cModel = new SrmPostContent1cModel(day,rootCsv);
-        this.srmRessource2v2cModel = new SrmRessource2v2cModel(day,rootCsv);
-        this.usrmVermserverRxModel = new UsrmVermserverRxModel(day, rootCsv);
-        this.usrmVermserverTxModel  = new UsrmVermserverTxModel(day, rootCsv);
-        this.srmSessionStart4cModel = new SrmSessionStart4cModel(day, rootCsv);
-        this.srmSessionId3v5cModel = new SrmSessionId3v5cModel(day,rootCsv);
-        this.srmTunningStartSession4V6v6S6CModel = new SrmTunningStartSession4v6v6s6cModel(day, rootCsv);
-        this.srmEnd7v7cModel  = new SrmEnd7v7cModel(day, rootCsv);
-        this.srmEnd8cModel = new SrmEnd8cModel(day, rootCsv);
+        this.srmGetContent0cModel = new SrmGetContent0cModel(rootCsv);
+        this.srmPostContent1cModel = new SrmPostContent1cModel(rootCsv);
+        this.srmRessource2v2cModel = new SrmRessource2v2cModel(rootCsv);
+        this.usrmVermserverRxModel = new UsrmVermserverRxModel(rootCsv);
+        this.usrmVermserverTxModel  = new UsrmVermserverTxModel(rootCsv);
+        this.srmSessionStart4cModel = new SrmSessionStart4cModel(rootCsv);
+        this.srmSessionId3v5cModel = new SrmSessionId3v5cModel(rootCsv);
+        this.srmTunningStartSession4V6v6S6CModel = new SrmTunningStartSession4v6v6s6cModel(rootCsv);
+        this.srmEnd7v7cModel  = new SrmEnd7v7cModel(rootCsv);
+        this.srmEnd8cModel = new SrmEnd8cModel(rootCsv);
 
-        this.df_srmGetContent0cModel = getDframe(srmGetContent0cModel.getRootCsv(), srmGetContent0cModel.getLogComponent(), srmGetContent0cModel.getModelName(), srmGetContent0cModel.getSchema(), day);
-        this.df_srmPostContent1cModel = getDframe(srmPostContent1cModel.getRootCsv(), srmPostContent1cModel.getLogComponent(), srmPostContent1cModel.getModelName(), srmPostContent1cModel.getSchema(), day);
-        this.df_srmRessource2v2cModel = getDframe(srmRessource2v2cModel.getRootCsv(), srmRessource2v2cModel.getLogComponent(), srmRessource2v2cModel.getModelName(),srmRessource2v2cModel.getSchema(), day);
-        this.df_usrm_vermserver_rx = getDframe(usrmVermserverRxModel.getRootCsv(), usrmVermserverRxModel.getLogComponent(), usrmVermserverRxModel.getModelName(), usrmVermserverRxModel.getSchema(), day);
-        this.df_usrm_vermserver_tx = getDframe(usrmVermserverTxModel.getRootCsv(), usrmVermserverTxModel.getLogComponent(), usrmVermserverTxModel.getModelName(), usrmVermserverTxModel.getSchema(), day);
-        this.df_srmSessionStart4cModel = getDframe(srmSessionStart4cModel.getRootCsv(), srmSessionStart4cModel.getLogComponent(), srmSessionStart4cModel.getModelName(), srmSessionStart4cModel.getSchema(), day);
-        this.df_srmSessionId3v5cModel = getDframe(srmSessionId3v5cModel.getRootCsv(), srmSessionId3v5cModel.getLogComponent(), srmSessionId3v5cModel.getModelName(), srmSessionId3v5cModel.getSchema(), day);
-        this.df_srmTunningStartSession4v6v4s6cModel = getDframe(srmTunningStartSession4V6v6S6CModel.getRootCsv(), srmTunningStartSession4V6v6S6CModel.getLogComponent(), srmTunningStartSession4V6v6S6CModel.getModelName(), srmTunningStartSession4V6v6S6CModel.getSchema(), day);
-        this.df_srmEnd7v7cModel = getDframe(srmEnd7v7cModel.getRootCsv(), srmEnd7v7cModel.getLogComponent(), srmEnd7v7cModel.getModelName(), srmEnd7v7cModel.getSchema(), day);
-        this.df_srmEnd8cModel = getDframe(srmEnd8cModel.getRootCsv(), srmEnd8cModel.getLogComponent(), srmEnd8cModel.getModelName(), srmEnd8cModel.getSchema(), day);
+        this.df_srmGetContent0cModel = getDframe(srmGetContent0cModel.getRootCsv(), srmGetContent0cModel.getLogComponent(), srmGetContent0cModel.getModelName(), srmGetContent0cModel.getSchema(), dateRange);
+        this.df_srmPostContent1cModel = getDframe(srmPostContent1cModel.getRootCsv(), srmPostContent1cModel.getLogComponent(), srmPostContent1cModel.getModelName(), srmPostContent1cModel.getSchema(), dateRange);
+        this.df_srmRessource2v2cModel = getDframe(srmRessource2v2cModel.getRootCsv(), srmRessource2v2cModel.getLogComponent(), srmRessource2v2cModel.getModelName(),srmRessource2v2cModel.getSchema(), dateRange);
+        this.df_usrm_vermserver_rx = getDframe(usrmVermserverRxModel.getRootCsv(), usrmVermserverRxModel.getLogComponent(), usrmVermserverRxModel.getModelName(), usrmVermserverRxModel.getSchema(), dateRange);
+        this.df_usrm_vermserver_tx = getDframe(usrmVermserverTxModel.getRootCsv(), usrmVermserverTxModel.getLogComponent(), usrmVermserverTxModel.getModelName(), usrmVermserverTxModel.getSchema(), dateRange);
+        this.df_srmSessionStart4cModel = getDframe(srmSessionStart4cModel.getRootCsv(), srmSessionStart4cModel.getLogComponent(), srmSessionStart4cModel.getModelName(), srmSessionStart4cModel.getSchema(), dateRange);
+        this.df_srmSessionId3v5cModel = getDframe(srmSessionId3v5cModel.getRootCsv(), srmSessionId3v5cModel.getLogComponent(), srmSessionId3v5cModel.getModelName(), srmSessionId3v5cModel.getSchema(), dateRange);
+        this.df_srmTunningStartSession4v6v4s6cModel = getDframe(srmTunningStartSession4V6v6S6CModel.getRootCsv(), srmTunningStartSession4V6v6S6CModel.getLogComponent(), srmTunningStartSession4V6v6S6CModel.getModelName(), srmTunningStartSession4V6v6S6CModel.getSchema(), dateRange);
+        this.df_srmEnd7v7cModel = getDframe(srmEnd7v7cModel.getRootCsv(), srmEnd7v7cModel.getLogComponent(), srmEnd7v7cModel.getModelName(), srmEnd7v7cModel.getSchema(), dateRange);
+        this.df_srmEnd8cModel = getDframe(srmEnd8cModel.getRootCsv(), srmEnd8cModel.getLogComponent(), srmEnd8cModel.getModelName(), srmEnd8cModel.getSchema(), dateRange);
 
     }
 
@@ -179,14 +178,27 @@ public class CatchupWorkflow implements Serializable {
          sqlcatchupallDF.write().csv("C:\\temp\\resultc.csv");
     }
 
-    private Dataset<Row> getDframe(String rootcsv, String logcomponent, String model, StructType schema, String day) {
-        String filename = rootcsv + "\\output_logstash\\"+ logcomponent +"\\"+ model + "\\" + day + "\\data.csv";
+    private Dataset<Row> getDframe(String rootcsv, String logcomponent, String model, StructType schema, List<String> daterange) {
+
+        String[] files = getFilePaths(rootcsv, logcomponent, model, daterange);
+
         return spark.read()
                 .format("csv")
                 .option("header", "false")
                 .option("delimiter", ";")
                 .option("nullValue", "\"\"")
                 .schema(schema)
-                .load(filename);
+                .csv(files);
+    }
+
+    private String[] getFilePaths(String rootcsv, String logcomponent, String model, List<String> daterange) {
+        int ldays = daterange.size();
+        String[] files = new String[ldays];
+        int i=0;
+        for (String day : daterange){
+            files[i] = rootcsv + "\\output_logstash\\"+ logcomponent +"\\"+ model + "\\" + day + "\\data.csv";
+            i++;
+        }
+        return files;
     }
 }

@@ -21,12 +21,10 @@ public class SrmRessource2v2cModel implements LogModel, Serializable {
     private final String modelName = "vod_catchup_ressource_2c_2v";
     private final String logComponent = "srm";
 
-    private final String date;
     private final String rootCsv;
 
-    public SrmRessource2v2cModel(String day, String rootCsv) {
+    public SrmRessource2v2cModel(String rootCsv) {
         schema = buildschema();
-        this.date = day;
         this.rootCsv = rootCsv;
     }
 

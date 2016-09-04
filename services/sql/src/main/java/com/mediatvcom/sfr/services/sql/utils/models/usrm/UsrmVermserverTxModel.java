@@ -20,12 +20,10 @@ public class UsrmVermserverTxModel implements Serializable {
     private final String modelName = "usrm_vermserver_tx";
     private final String logComponent = "usrm";
 
-    private final String date;
     private final String rootCsv;
 
-    public UsrmVermserverTxModel(String day, String rootCsv) {
+    public UsrmVermserverTxModel(String rootCsv) {
         schema = buildschema();
-        this.date = day;
         this.rootCsv = rootCsv;
     }
 

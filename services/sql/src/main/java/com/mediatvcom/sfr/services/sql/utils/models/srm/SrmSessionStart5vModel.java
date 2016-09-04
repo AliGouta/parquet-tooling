@@ -21,12 +21,11 @@ public class SrmSessionStart5vModel implements LogModel, Serializable {
     private final String modelName = "vod_session-start_5v";
     private final String logComponent = "srm";
 
-    private final String date;
+
     private final String rootCsv;
 
-    public SrmSessionStart5vModel(String day, String rootCsv) {
+    public SrmSessionStart5vModel(String rootCsv) {
         schema = buildschema();
-        this.date = day;
         this.rootCsv = rootCsv;
     }
 

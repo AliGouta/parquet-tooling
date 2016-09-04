@@ -21,12 +21,10 @@ public class UsrmVermserverRxModel implements Serializable {
     private final String modelName = "usrm_vermserver_rx";
     private final String logComponent = "usrm";
 
-    private final String date;
     private final String rootCsv;
 
-    public UsrmVermserverRxModel(String day, String rootCsv) {
+    public UsrmVermserverRxModel(String rootCsv) {
         schema = buildschema();
-        this.date = day;
         this.rootCsv = rootCsv;
     }
 

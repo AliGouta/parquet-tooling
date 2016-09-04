@@ -21,12 +21,10 @@ public class SrmEnd7v7cModel implements LogModel, Serializable {
     private final String modelName = "vod_catchup_end_7v_7c";
     private final String logComponent = "srm";
 
-    private final String date;
     private final String rootCsv;
 
-    public SrmEnd7v7cModel(String day, String rootCsv) {
+    public SrmEnd7v7cModel(String rootCsv) {
         schema = buildschema();
-        this.date = day;
         this.rootCsv = rootCsv;
     }
 

@@ -21,12 +21,10 @@ public class SrmSessionStart4cModel implements LogModel, Serializable {
     private final String modelName = "catchup_session-start_4c";
     private final String logComponent = "srm";
 
-    private final String date;
     private final String rootCsv;
 
-    public SrmSessionStart4cModel(String day, String rootCsv) {
+    public SrmSessionStart4cModel(String rootCsv) {
         schema = buildschema();
-        this.date = day;
         this.rootCsv = rootCsv;
     }
 

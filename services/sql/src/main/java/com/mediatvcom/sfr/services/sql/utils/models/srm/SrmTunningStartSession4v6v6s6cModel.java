@@ -21,12 +21,10 @@ public class SrmTunningStartSession4v6v6s6cModel implements LogModel, Serializab
     private final String modelName = "vod_catchup_tuning_start-session_4v_6v_6s_6c";
     private final String logComponent = "srm";
 
-    private final String date;
     private final String rootCsv;
 
-    public SrmTunningStartSession4v6v6s6cModel(String day, String rootCsv) {
+    public SrmTunningStartSession4v6v6s6cModel(String rootCsv) {
         schema = buildschema();
-        this.date = day;
         this.rootCsv = rootCsv;
     }
 

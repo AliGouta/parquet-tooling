@@ -20,12 +20,10 @@ public class SrmSessionStart1sModel implements LogModel {
     private final String modelName = "sdv_session-start_1s";
     private final String logComponent = "srm";
 
-    private final String date;
     private final String rootCsv;
 
-    public SrmSessionStart1sModel(String day, String rootCsv) {
+    public SrmSessionStart1sModel(String rootCsv) {
         schema = buildschema();
-        this.date = day;
         this.rootCsv = rootCsv;
     }
 

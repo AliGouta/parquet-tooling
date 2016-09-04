@@ -21,12 +21,10 @@ public class SrmSessionId3v5cModel implements LogModel, Serializable {
     private final String modelName = "vod_catchup_sessionId_3v_5c";
     private final String logComponent = "srm";
 
-    private final String date;
     private final String rootCsv;
 
-    public SrmSessionId3v5cModel(String day, String rootCsv) {
+    public SrmSessionId3v5cModel(String rootCsv) {
         schema = buildschema();
-        this.date = day;
         this.rootCsv = rootCsv;
     }
 
