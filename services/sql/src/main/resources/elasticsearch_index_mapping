@@ -1,0 +1,92 @@
+{
+  "mappings": {
+    "all": {
+      "properties": {
+        "date": {
+          "type":   "date",
+          "format": "yyyy-MM-dd HH:mm:ss.SSSSSS"
+        },
+        "date_start_video": {
+          "type":   "string",
+          "index":  "not_analyzed",
+          "null_value":  "null"
+        },
+        "content_type": {
+          "type":   "string",
+          "index":  "not_analyzed",
+          "null_value":  "null"
+        },
+        "content_name": {
+          "type":   "string",
+          "index":  "not_analyzed",
+          "null_value":  "null"
+        },
+        "streamer": {
+          "type":   "string",
+          "index":  "not_analyzed",
+          "null_value":  "null"
+        },
+        "bitrate_rx": {
+          "type":   "long",
+          "index":  "not_analyzed",
+          "null_value":  "0"
+        },
+        "service_group": {
+          "type":   "string",
+          "index":  "not_analyzed",
+          "null_value":  "null"
+        },
+        "port_rfgw": {
+          "type":   "string",
+          "index":  "not_analyzed",
+          "null_value":  "null"
+        },
+        "ip_rfgw": {
+          "type":   "string",
+          "index":  "not_analyzed",
+          "null_value":  "null"
+        },
+        "client_id": {
+          "type":   "string",
+          "index":  "not_analyzed",
+          "null_value":  "null"
+        },
+        "carteId": {
+          "type":   "string",
+          "index":  "not_analyzed",
+          "null_value":  "null"
+        },
+        "date_end": {
+          "type":   "string",
+          "index":  "not_analyzed",
+          "null_value":  "null"
+        },
+        "sessionId": {
+          "type":   "string",
+          "index":  "not_analyzed",
+          "null_value":  "null"
+        },
+        "mode_rx": {
+          "type":   "string",
+          "index":  "not_analyzed",
+          "null_value":  "null"
+        },
+        "code_http": {
+          "type":   "string",
+          "index":  "not_analyzed",
+          "null_value":  "null"
+        },
+        "x_srm_error_message": {
+          "type":   "string",
+          "index":  "not_analyzed",
+          "null_value":  "null"
+        },
+        "ondemand_session_id": {
+          "type":   "string",
+          "index":  "not_analyzed",
+          "null_value":  "null"
+        }
+      }
+    }
+  }
+}

@@ -158,7 +158,8 @@ public class VodWorkflow implements Serializable {
          System.out.println(dateRange.get(0));
 
          Dataset<Row> sqlDF = spark.sql("SELECT t3av.date_normal as date_normal, t3av.date_3av as date_3av," +
-                 " t3av.streamer_3av as streamer_3av, 3v.date as date_3v, t3av.url_3av as url_3av " +
+                 " t3av.streamer_3av as streamer_3av, if(3v.cseq IS NOT NULL, 3v.cseq, \"null\") as cseq, " +
+                 "if(3v.date IS NOT NULL, 3v.date, \"2016-07-07 00:00:24.000000\") as date_3v, t3av.url_3av as url_3av " +
                  "From (" +
                  " SELECT 3av.date as date_normal, unix_timestamp(3av.date, \"yyyy-MM-dd HH:mm:ss.SSSSSS\") as date_3av, " +
                     "3av.streamer as streamer_3av, 3av.cseq as cseq_3av,  3av.url as url_3av " +
@@ -178,15 +179,16 @@ public class VodWorkflow implements Serializable {
                  unix_timestamp(3av.date, "yyyy-MM-dd HH:mm:ss.SSSSSS").cast("timestamp")
 */
 
-         /*
+
+
          Map<String, String> cfg = new HashedMap();
          cfg.put("es.nodes", "10.1.1.157");
          cfg.put("es.port", "9200");
-         cfg.put("es.resource", "vodcatchup");
+         cfg.put("es.resource", "vodcatchup/all");
+         cfg.put("es.spark.dataframe.write.null", "true");
 
-         JavaEsSparkSQL.saveToEs(sqlDF4v, cfg);
+         JavaEsSparkSQL.saveToEs(sqlDF, cfg);
 
-  */
 
          // , cseq should be removed since it is somtimes set to some value!
          /*

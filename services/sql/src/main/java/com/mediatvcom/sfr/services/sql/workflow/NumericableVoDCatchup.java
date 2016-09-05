@@ -7,14 +7,17 @@ import com.mediatvcom.sfr.services.sql.utils.models.usrm.UsrmTransformedSnmpMode
 import com.mediatvcom.sfr.services.sql.utils.models.usrm.UsrmVermserverRxModel;
 import com.mediatvcom.sfr.services.sql.utils.models.usrm.UsrmVermserverTxModel;
 import com.mediatvcom.sfr.services.sql.utils.udfs.*;
+import org.apache.commons.collections.map.HashedMap;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SparkSession;
 import org.apache.spark.sql.types.DataTypes;
 import org.apache.spark.sql.types.StructType;
+import org.elasticsearch.spark.sql.api.java.JavaEsSparkSQL;
 
 import java.io.Serializable;
 import java.util.List;
+import java.util.Map;
 
 import static org.apache.spark.sql.functions.callUDF;
 import static org.apache.spark.sql.functions.lit;
@@ -134,6 +137,7 @@ public class NumericableVoDCatchup implements Serializable {
         spark.udf().register("getContentNameOnSetupOn4vError", new ContentNameOnSetupOn4vError(), DataTypes.StringType);
         spark.udf().register("getContentNameOnSetup", new ContentNameOnSetup(), DataTypes.StringType);
         spark.udf().register("getCarteOnSetup", new CarteOnSetup(), DataTypes.StringType);
+        spark.udf().register("getBitrate", new Bitrate(), DataTypes.LongType);
 
         df_srmGetContent0cModel = df_srmGetContent0cModel.withColumn("content_name", callUDF("getContentNameOnGet", df_srmGetContent0cModel.col("url")));
         df_srmGetContent0cModel = df_srmGetContent0cModel.withColumn("carteId", callUDF("getCarteOnGet", df_srmGetContent0cModel.col("url")));
@@ -348,10 +352,47 @@ public class NumericableVoDCatchup implements Serializable {
                 "FROM cathup_1c_error " +
                 "UNION ALL " +
                 "SELECT * " +
-                "FROM vod_catchup_error ").repartition(1);
+                "FROM vod_catchup_error ").cache();
 
-        sqlallDF.show();
-        sqlallDF.write().csv("C:\\temp\\result-update3-all.csv");
+        sqlallDF = sqlallDF.withColumn("bitrate_long_rx", callUDF("getBitrate", sqlallDF.col("bitrate_rx")));
+        sqlallDF.createOrReplaceTempView("all_vod_catchup");
+
+
+        Dataset<Row> sqlfinalDF = spark.sql("SELECT " +
+                "date, " +
+                "if (date_start_video IS NOT NULL, date_start_video, \"null\") as date_start_video, " +
+                "if (content_type IS NOT NULL, content_type, \"null\") as content_type, " +
+                "if (content_name IS NOT NULL, content_name, \"null\") as content_name, " +
+                "if (streamer IS NOT NULL, streamer, \"null\") as streamer, " +
+                "if (bitrate_rx IS NOT NULL, bitrate_long_rx, 0) as bitrate_rx, " +
+                "if (service_group IS NOT NULL, service_group, \"null\") as service_group,  " +
+                "if (port_rfgw IS NOT NULL, port_rfgw, \"null\") as port_rfgw, " +
+                "if (ip_rfgw IS NOT NULL, ip_rfgw, \"null\") as ip_rfgw, " +
+                "if (client_id IS NOT NULL, client_id, \"null\") as client_id, " +
+                "if (carteId IS NOT NULL, carteId, \"null\") as carteId, " +
+                "if (date_end IS NOT NULL, date_end, \"null\") as date_end, " +
+                "if (sessionId IS NOT NULL, sessionId, \"null\") as sessionId, " +
+                "if (mode_rx IS NOT NULL, mode_rx, \"null\") as mode_rx, " +
+                "if (code_http IS NOT NULL, code_http, \"null\") as code_http, " +
+                "if (x_srm_error_message IS NOT NULL, x_srm_error_message, \"null\") as x_srm_error_message, " +
+                "if (ondemand_session_id IS NOT NULL, ondemand_session_id, \"null\") as ondemand_session_id " +
+                "FROM all_vod_catchup ");
+
+
+        Map<String, String> cfg = new HashedMap();
+        cfg.put("es.nodes", "10.1.1.157");
+        cfg.put("es.port", "9200");
+        cfg.put("es.resource", "vodcatchup/all");
+        cfg.put("es.spark.dataframe.write.null", "true");
+
+        JavaEsSparkSQL.saveToEs(sqlfinalDF, cfg);
+
+
+
+
+
+        sqlfinalDF.printSchema();
+        sqlfinalDF.write().csv("C:\\temp\\result-all.csv");
 
     }
 

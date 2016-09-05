@@ -40,9 +40,8 @@
 
         <dependency>
             <groupId>org.elasticsearch</groupId>
-            <artifactId>elasticsearch-hadoop</artifactId>
+            <artifactId>elasticsearch-spark-20_2.10</artifactId>
             <version>5.0.0-alpha5</version>
-            <scope>provided</scope>
         </dependency>
 
         <dependency>
@@ -88,6 +87,17 @@
             <version>4.10</version>
         </dependency>
     </dependencies>
+
+    <exclusions>
+        <exclusion>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-log4j12</artifactId>
+        </exclusion>
+        <exclusion>
+            <groupId>log4j</groupId>
+            <artifactId>log4j</artifactId>
+        </exclusion>
+    </exclusions>
 
 
 </project>
