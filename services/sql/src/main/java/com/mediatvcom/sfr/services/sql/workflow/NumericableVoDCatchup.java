@@ -172,8 +172,9 @@ public class NumericableVoDCatchup implements Serializable {
          Catchup errors 0c
           */
 
-        Dataset<Row> sql0cerrorDF = spark.sql("SELECT 0c.date as date,  NULL as date_start_video, 0c.content_type as content_type, " +
-                "0c.content_name as content_name, NULL as streamer, NULL as bitrate_rx, NULL as service_group, " +
+        Dataset<Row> sql0cerrorDF = spark.sql("SELECT from_utc_timestamp(from_unixtime(unix_timestamp(0c.date, \"yyyy-MM-dd HH:mm:ss.SSS\")), 'Europe/Paris') as date,  " +
+                "NULL as date_start_video, 0c.content_type as content_type, " +
+                "0c.content_name as content_name, NULL as streamer, NULL as bitrate_rx, NULL as rfgw_id, NULL as service_group, " +
                 "NULL as port_rfgw, NULL as ip_rfgw, NULL as client_id, 0c.carteId as carteId, NULL as date_end, " +
                 "NULL as sessionId, NULL as mode_rx, 0c.code_http as code_http, NULL as x_srm_error_message, NULL as ondemand_session_id " +
                 "FROM srmGetContent0cModel 0c " +
@@ -186,8 +187,9 @@ public class NumericableVoDCatchup implements Serializable {
          Catchup errors 1c
           */
 
-        Dataset<Row> sql1cerrorDF = spark.sql("SELECT 1c.date as date,  NULL as date_start_video, 1c.content_type as content_type, " +
-                "NULL as content_name, NULL as streamer, NULL as bitrate_rx, NULL as service_group, " +
+        Dataset<Row> sql1cerrorDF = spark.sql("SELECT from_utc_timestamp(from_unixtime(unix_timestamp(1c.date, \"yyyy-MM-dd HH:mm:ss.SSS\")), 'Europe/Paris') as date,  " +
+                "NULL as date_start_video, 1c.content_type as content_type, " +
+                "NULL as content_name, NULL as streamer, NULL as bitrate_rx, NULL as rfgw_id, NULL as service_group, " +
                 "NULL as port_rfgw, NULL as ip_rfgw, NULL as client_id, NULL as carteId, NULL as date_end, " +
                 "NULL as sessionId, NULL as mode_rx, 1c.code_http as code_http, NULL as x_srm_error_message, NULL as ondemand_session_id " +
                 "FROM srmPostContent1cModel 1c " +
@@ -199,10 +201,11 @@ public class NumericableVoDCatchup implements Serializable {
          VoD & catchup errors
           */
 
-        Dataset<Row> sqlVodCatchuperrorDF = spark.sql("SELECT date_4v as date, NULL as date_start_video,  " +
+        Dataset<Row> sqlVodCatchuperrorDF = spark.sql("SELECT from_utc_timestamp(from_unixtime(unix_timestamp(date_4v, \"yyyy-MM-dd HH:mm:ss.SSS\")), 'Europe/Paris') as date, " +
+                "NULL as date_start_video,  " +
                 "if (content_name_4v rlike '(.+?)controlSession.*', \"catchup\", content_type_1v) as content_type, " +
                 "content_name_4v as content_name, " +
-                "NULL as streamer, NULL as bitrate_rx, NULL as service_group, NULL as port_rfgw, NULL as ip_rfgw, NULL as client_id, " +
+                "NULL as streamer, NULL as bitrate_rx, NULL as rfgw_id, NULL as service_group, NULL as port_rfgw, NULL as ip_rfgw, NULL as client_id, " +
                 "carteId_4v as carteId, NULL as date_end, NULL as sessionId, NULL as mode_rx, " +
                 "code_http_4v as code_http, x_srm_error_message_4v as x_srm_error_message, NULL as ondemand_session_id " +
                 "FROM ( " +
@@ -225,7 +228,7 @@ public class NumericableVoDCatchup implements Serializable {
         sqlVodCatchuperrorDF.createOrReplaceTempView("vod_catchup_error");
 
          /*
-         VoD OK
+         VoD & catchup
           */
 
         // , cseq should be removed since it is somtimes set to some value!
@@ -239,7 +242,7 @@ public class NumericableVoDCatchup implements Serializable {
         sqlDF4v.createOrReplaceTempView("4v");
 
         Dataset<Row> sqlcommonDF = spark.sql("SELECT rx.date as date_rx, 2v.date as date_2v, 2v.ondemand_session_id as ondemand_session_id_2v, " +
-                "2v.code_http as code_http_2v, rx.bitrate as bitrate_rx, rx.service_group as service_group_rx, tx.ip_rfgw as ip_rfgw_tx, " +
+                "2v.code_http as code_http_2v, rx.bitrate as bitrate_rx, regexp_extract(rx.service_group, \"(.+?_U)(.*)\", 1) as rfgw_id, rx.service_group as service_group_rx, tx.ip_rfgw as ip_rfgw_tx, " +
                 "tx.port_rfgw as port_rfgw_tx, rx.mode as mode_rx " +
                 "FROM ( " +
                     "SELECT tr2v.date as date, tr2v.ondemand_session_id as ondemand_session_id, " +
@@ -273,7 +276,7 @@ public class NumericableVoDCatchup implements Serializable {
 
         Dataset<Row> sqlDF3aCommon = spark.sql("SELECT MAX(common.date_rx) as date_common, 3aus.date as date_3aus, 3aus.client_id as client_id_3aus, " +
                 "3aus.ip_rfgw as ip_rfgw_3aus, 3aus.port_rfgw as port_rfgw_3aus, 3aus.content_name as content_name_3aus, " +
-                "common.bitrate_rx as bitrate_rx_common, common.service_group_rx as service_group_rx_common, common.mode_rx as mode_rx_3aus " +
+                "common.bitrate_rx as bitrate_rx_common, common.rfgw_id as rfgw_id, common.service_group_rx as service_group_rx_common, common.mode_rx as mode_rx_3aus " +
                 "From ( " +
                     "SELECT tr3aus.date as date, tr3aus.client_id as client_id, " +
                     "tr3aus.ip_rfgw as ip_rfgw, tr3aus.port_rfgw as port_rfgw, tr3aus.content_name as content_name," +
@@ -284,14 +287,19 @@ public class NumericableVoDCatchup implements Serializable {
                 "JOIN common " +
                 "ON common.port_rfgw_tx = 3aus.port_rfgw and common.ip_rfgw_tx = 3aus.ip_rfgw " +
                 "and ( unix_timestamp(3aus.date, \"yyyy-MM-dd HH:mm:ss.SSSSSS\") + 7200 ) >= unix_timestamp(common.date_rx, \"yyyy-MM-dd HH:mm:ss.SSS\")  " +
-                "Group by 3aus.client_id, 3aus.cseq, common.bitrate_rx, common.service_group_rx, common.mode_rx, " +
+                "Group by 3aus.client_id, 3aus.cseq, common.bitrate_rx, common.rfgw_id, common.service_group_rx, common.mode_rx, " +
                 "3aus.content_name, 3aus.date, 3aus.ip_rfgw, 3aus.port_rfgw ").cache();
 
         sqlDF3aCommon.createOrReplaceTempView("3auscommon");
 
-        Dataset<Row> sqlSucessVodlDF = spark.sql("SELECT 3aus1vus.date_1vus as date, NULL as date_start_video, 3aus1vus.content_type_1vus as content_type, 3av.content_name as content_name, 3av.streamer as streamer, 3auscommon.bitrate_rx_common as bitrate_rx, " +
-                "3auscommon.service_group_rx_common as service_group, 3av.port_rfgw as port_rfgw, 3av.ip_rfgw as ip_rfgw, 3v.client_id as client_id, " +
-                "3av.carteId as carteId, 7v.date as date_end, 3v.session_id as sessionId, " +
+         /*
+         Vod OK
+          */
+
+        Dataset<Row> sqlSucessVodlDF = spark.sql("SELECT from_utc_timestamp(from_unixtime(unix_timestamp(3aus1vus.date_1vus, \"yyyy-MM-dd HH:mm:ss.SSS\")), 'Europe/Paris') as date, " +
+                "NULL as date_start_video, 3aus1vus.content_type_1vus as content_type, 3av.content_name as content_name, " +
+                "3av.streamer as streamer, 3auscommon.bitrate_rx_common as bitrate_rx, 3auscommon.rfgw_id as rfgw_id, 3auscommon.service_group_rx_common as service_group, " +
+                "3av.port_rfgw as port_rfgw, 3av.ip_rfgw as ip_rfgw, 3v.client_id as client_id, 3av.carteId as carteId, 7v.date as date_end, 3v.session_id as sessionId, " +
                 "3auscommon.mode_rx_3aus as mode_rx, \"200 OK\" as code_http, NULL as x_srm_error_message, NULL as ondemand_session_id " +
                 "From streamerModel 3av " +
                 "LEFT JOIN srmSessionId3v5cModel 3v " +
@@ -312,8 +320,13 @@ public class NumericableVoDCatchup implements Serializable {
         sqlSucessVodlDF.createOrReplaceTempView("vod_sessions_ok");
 
 
-        Dataset<Row> sqlcatchupDF = spark.sql("SELECT rx.date as date_rx, 2v.date as date_2v, 2v.ondemand_session_id as ondemand_session_id_2v, " +
-                "2v.code_http as code_http_2v, rx.bitrate as bitrate_rx, rx.service_group as service_group_rx, rx.ip_rfgw as ip_rfgw_rx, " +
+         /*
+         Catchup OK
+          */
+
+        Dataset<Row> sqlcatchupDF = spark.sql("SELECT from_utc_timestamp(from_unixtime(unix_timestamp(rx.date, \"yyyy-MM-dd HH:mm:ss.SSS\")), 'UTC') as date_rx, " +
+                "2v.date as date_2v, 2v.ondemand_session_id as ondemand_session_id_2v, " +
+                "2v.code_http as code_http_2v, rx.bitrate as bitrate_rx, regexp_extract(rx.service_group, \"(.+?_U)(.*)\", 1) as rfgw_id, rx.service_group as service_group_rx, rx.ip_rfgw as ip_rfgw_rx, " +
                 "rx.port_rfgw as port_rfgw_rx, rx.mode as mode_rx, " +
                 "tjoin.date_8c as date_8c_tj, tjoin.content_type as content_type_8c " +
                 "FROM ( " +
@@ -334,7 +347,7 @@ public class NumericableVoDCatchup implements Serializable {
         sqlcatchupDF.createOrReplaceTempView("cathup_success_session");
 
         Dataset<Row> sqlallDF = spark.sql("SELECT catchupok.date_rx as date, 4c.date as date_start_video, content_type_8c as content_type, content_name as content_name, NULL as streamer, " +
-                "catchupok.bitrate_rx as bitrate_rx, catchupok.service_group_rx as service_group, " +
+                "catchupok.bitrate_rx as bitrate_rx, catchupok.rfgw_id as rfgw_id, catchupok.service_group_rx as service_group, " +
                 "catchupok.port_rfgw_rx as port_rfgw, catchupok.ip_rfgw_rx as ip_rfgw, " +
                 "client_id as client_id, carteId as carteId, date_8c_tj as date_end, NULL as sessionId, catchupok.mode_rx as mode_rx, " +
                 "\"200 OK\" as code_http, NULL as x_srm_error_message, catchupok.ondemand_session_id_2v as ondemand_session_id " +
@@ -358,13 +371,27 @@ public class NumericableVoDCatchup implements Serializable {
         sqlallDF.createOrReplaceTempView("all_vod_catchup");
 
 
-        Dataset<Row> sqlfinalDF = spark.sql("SELECT " +
+        Dataset<Row> sqlcanalDF = spark.sql("SELECT vodcatchup.date as date, vodcatchup.content_name as content_name, " +
+                "vodcatchup.bitrate_long_rx as bitrate_long_rx, vodcatchup.bitrate_rx as bitrate_rx " +
+                "FROM all_vod_catchup vodcatchup " +
+                "WHERE vodcatchup.content_name like \"%COD%\" ").cache();
+
+        sqlcanalDF.createOrReplaceTempView("canal_bw");
+
+        Dataset<Row> sqlFinalCanalDF = spark.sql("SELECT " +
+                "date, " +
+                "if (content_name IS NOT NULL, content_name, \"null\") as content_name, " +
+                "if (bitrate_rx IS NOT NULL, bitrate_long_rx, 0) as bitrate_rx " +
+                "FROM canal_bw ").repartition(1);
+
+        Dataset<Row> sqlFinalVodCatchupAllDF = spark.sql("SELECT " +
                 "date, " +
                 "if (date_start_video IS NOT NULL, date_start_video, \"null\") as date_start_video, " +
                 "if (content_type IS NOT NULL, content_type, \"null\") as content_type, " +
                 "if (content_name IS NOT NULL, content_name, \"null\") as content_name, " +
                 "if (streamer IS NOT NULL, streamer, \"null\") as streamer, " +
                 "if (bitrate_rx IS NOT NULL, bitrate_long_rx, 0) as bitrate_rx, " +
+                "if (rfgw_id IS NOT NULL, rfgw_id, \"null\") as rfgw_id,  " +
                 "if (service_group IS NOT NULL, service_group, \"null\") as service_group,  " +
                 "if (port_rfgw IS NOT NULL, port_rfgw, \"null\") as port_rfgw, " +
                 "if (ip_rfgw IS NOT NULL, ip_rfgw, \"null\") as ip_rfgw, " +
@@ -376,23 +403,58 @@ public class NumericableVoDCatchup implements Serializable {
                 "if (code_http IS NOT NULL, code_http, \"null\") as code_http, " +
                 "if (x_srm_error_message IS NOT NULL, x_srm_error_message, \"null\") as x_srm_error_message, " +
                 "if (ondemand_session_id IS NOT NULL, ondemand_session_id, \"null\") as ondemand_session_id " +
-                "FROM all_vod_catchup ");
+                "FROM all_vod_catchup ").repartition(1);
+
+        /*
+        root
+         |-- date: timestamp (nullable = true)
+         |-- date_start_video: string (nullable = true)
+         |-- content_type: string (nullable = true)
+         |-- content_name: string (nullable = true)
+         |-- streamer: string (nullable = true)
+         |-- bitrate_rx: long (nullable = true)
+         |-- rfgw_id: string (nullable = true)
+         |-- service_group: string (nullable = true)
+         |-- port_rfgw: string (nullable = true)
+         |-- ip_rfgw: string (nullable = true)
+         |-- client_id: string (nullable = true)
+         |-- carteId: string (nullable = true)
+         |-- date_end: string (nullable = true)
+         |-- sessionId: string (nullable = true)
+         |-- mode_rx: string (nullable = true)
+         |-- code_http: string (nullable = true)
+         |-- x_srm_error_message: string (nullable = true)
+         |-- ondemand_session_id: string (nullable = true)
+         */
+
+        /*
+        root
+         |-- date: timestamp (nullable = true)
+         |-- content_name: string (nullable = true)
+         |-- bitrate_rx: long (nullable = true)
+         */
 
 
-        Map<String, String> cfg = new HashedMap();
-        cfg.put("es.nodes", "10.1.1.157");
-        cfg.put("es.port", "9200");
-        cfg.put("es.resource", "vodcatchup/all");
-        cfg.put("es.spark.dataframe.write.null", "true");
+        Map<String, String> cfg1 = new HashedMap();
+        cfg1.put("es.nodes", "10.1.1.157");
+        cfg1.put("es.port", "9200");
+        cfg1.put("es.resource", "vodcatchup/success_errors");
+        cfg1.put("es.spark.dataframe.write.null", "true");
 
-        JavaEsSparkSQL.saveToEs(sqlfinalDF, cfg);
+        Map<String, String> cfg2 = new HashedMap();
+        cfg2.put("es.nodes", "10.1.1.157");
+        cfg2.put("es.port", "9200");
+        cfg2.put("es.resource", "canal/bw");
+        cfg2.put("es.spark.dataframe.write.null", "true");
 
+        JavaEsSparkSQL.saveToEs(sqlFinalVodCatchupAllDF, cfg1);
+        JavaEsSparkSQL.saveToEs(sqlFinalCanalDF, cfg2);
 
+        sqlFinalVodCatchupAllDF.printSchema();
+        sqlFinalVodCatchupAllDF.write().csv("C:\\temp\\result-all.csv");
 
-
-
-        sqlfinalDF.printSchema();
-        sqlfinalDF.write().csv("C:\\temp\\result-all.csv");
+        sqlFinalCanalDF.printSchema();
+        sqlFinalCanalDF.write().csv("C:\\temp\\result-canal.csv");
 
     }
 

@@ -1,10 +1,7 @@
 package com.mediatvcom.sfr.services.sql;
 
 import com.beust.jcommander.Parameter;
-import com.mediatvcom.sfr.services.sql.workflow.BwErrors;
-import com.mediatvcom.sfr.services.sql.workflow.CatchupWorkflow;
-import com.mediatvcom.sfr.services.sql.workflow.NumericableVoDCatchup;
-import com.mediatvcom.sfr.services.sql.workflow.VodWorkflow;
+import com.mediatvcom.sfr.services.sql.workflow.*;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.spark.sql.SparkSession;
 import org.joda.time.DateTime;
@@ -36,7 +33,7 @@ public class SparkSqlRunner {
     @Parameter(names = "--src-path", description = "the root path where Csv files are located", required = true)
     String rootCsv = "C:\\Users\\agouta\\Desktop\\output.tar\\output";
     @Parameter(names = "--content-type", description = "Might be either vod, catch-up or Sdv", required = true)
-    String contentType = "vodcatchupall";
+    String contentType = "bw-errors";
 
     DateTimeFormatter formatter = DateTimeFormat.forPattern("yyyy-MM-dd");
     //DateTimeFormatter dtfOut = DateTimeFormat.forPattern("MM/dd/yyyy");
@@ -66,8 +63,11 @@ public class SparkSqlRunner {
         else if (contentType.equals("bw-errors")){
             new BwErrors(spark, rootCsv, dateRange).runWorkflow();
         }
+        else if (contentType.equals("bytel")){
+            new Bytel(spark, rootCsv, dateRange).runWorkflow();
+        }
         else if (contentType.equals("sdv")){
-            //new SdvWorkflow(spark, rootCsv, day);
+            new SDV(spark, rootCsv, dateRange).runWorkflow();
         }
 
         //df.show();

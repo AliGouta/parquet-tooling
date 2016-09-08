@@ -7,14 +7,17 @@ import com.mediatvcom.sfr.services.sql.utils.models.usrm.UsrmTransformedSnmpMode
 import com.mediatvcom.sfr.services.sql.utils.models.usrm.UsrmVermserverRxModel;
 import com.mediatvcom.sfr.services.sql.utils.models.usrm.UsrmVermserverTxModel;
 import com.mediatvcom.sfr.services.sql.utils.udfs.*;
+import org.apache.commons.collections.map.HashedMap;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SparkSession;
 import org.apache.spark.sql.types.DataTypes;
 import org.apache.spark.sql.types.StructType;
+import org.elasticsearch.spark.sql.api.java.JavaEsSparkSQL;
 
 import java.io.Serializable;
 import java.util.List;
+import java.util.Map;
 
 import static org.apache.spark.sql.functions.callUDF;
 import static org.apache.spark.sql.functions.lit;
@@ -93,17 +96,44 @@ public class BwErrors implements Serializable {
 
          sqlsnmpDF.createOrReplaceTempView("snmp4v");
 
-         Dataset<Row> sqlbwDF = spark.sql("SELECT 4verrors.date_rx as date, 4verrors.bitrate_rx as bitrate_rx, " +
+         Dataset<Row> sqlbwDF = spark.sql("SELECT from_utc_timestamp(from_unixtime(unix_timestamp(4verrors.date_rx, \"yyyy-MM-dd HH:mm:ss.SSS\")), 'UTC') as date, " +
+                 "4verrors.bitrate_rx as bitrate_rx, " +
                  "4verrors.service_group_rx as service_group, 4verrors.ip_rfgw_rx as ip_rfgw, 4verrors.port_rfgw_rx as port_rfgw, " +
-                 "4verrors.service_group_detail_rx as service_group, 4verrors.code_http_tx as code_http, " +
-                 "snmp4v.date_down_4vbw as date_down, snmp4v.date_up_4vbw as date_up, 4verrors.ondemand_session_id_rx as ondemand_session_id, " +
+                 "4verrors.service_group_detail_rx as rfgw_id, 4verrors.code_http_tx as code_http, " +
+                 "from_utc_timestamp(from_unixtime(unix_timestamp(snmp4v.date_down_4vbw, \"yyyy-MM-dd HH:mm:ss.SSS\")), 'UTC') as date_down, " +
+                 "from_utc_timestamp(from_unixtime(unix_timestamp(snmp4v.date_up_4vbw, \"yyyy-MM-dd HH:mm:ss.SSS\")), 'UTC') as date_up, " +
+                 "4verrors.ondemand_session_id_rx as ondemand_session_id, " +
                  "if (snmp4v.ondemand_session_id_rx_4v_4vbw = 4verrors.ondemand_session_id_rx, \"SRM Disconnected From USRM\", \"Not Enough Bandwidth\") as bw_real_error " +
                  "FROM 4verrors " +
                  "LEFT JOIN snmp4v " +
-                 "ON snmp4v.ondemand_session_id_rx_4v_4vbw = 4verrors.ondemand_session_id_rx ").repartition(1);
+                 "ON snmp4v.ondemand_session_id_rx_4v_4vbw = 4verrors.ondemand_session_id_rx ").cache();
 
-         sqlbwDF.show();
-         sqlbwDF.write().csv("C:\\temp\\result-bw-errors.csv");
+         sqlbwDF.createOrReplaceTempView("bw_errors");
+
+         Dataset<Row> sqlFinalBwErrorsDF = spark.sql("SELECT " +
+                 "date, " +
+                 "if (bitrate_rx IS NOT NULL, bitrate_rx, \"null\") as bitrate_rx, " +
+                 "if (service_group IS NOT NULL, service_group, \"null\") as service_group, " +
+                 "if (ip_rfgw IS NOT NULL, ip_rfgw, \"null\") as ip_rfgw, " +
+                 "if (port_rfgw IS NOT NULL, port_rfgw, \"null\") as port_rfgw,  " +
+                 "if (rfgw_id IS NOT NULL, rfgw_id, \"null\") as rfgw_id,  " +
+                 "if (code_http IS NOT NULL, code_http, \"null\") as code_http,  " +
+                 "date_down, " +
+                 "date_up, " +
+                 "if (ondemand_session_id IS NOT NULL, ondemand_session_id, \"null\") as ondemand_session_id,  " +
+                 "if (bw_real_error IS NOT NULL, bw_real_error, \"null\") as bw_real_error  " +
+                 "FROM bw_errors ").repartition(1);
+
+         Map<String, String> cfg = new HashedMap();
+         cfg.put("es.nodes", "10.1.1.157");
+         cfg.put("es.port", "9200");
+         cfg.put("es.resource", "bw_errors/not_enough_bandwidth");
+         cfg.put("es.spark.dataframe.write.null", "true");
+
+         JavaEsSparkSQL.saveToEs(sqlFinalBwErrorsDF, cfg);
+
+         sqlFinalBwErrorsDF.show();
+         sqlFinalBwErrorsDF.write().csv("C:\\temp\\result-bw-errors.csv");
 
      }
 

@@ -1,29 +1,33 @@
-Vod:
----
+Dashboard1:
+----------------------------------------------------------------
 
 Vod Success:
-date, xxxxxxxx, content_type, content_name, streamer, bitrate_rx, service_group, port_rfgw, ip_rfgw, client_id, carteId, date_end, sessionId, mode_rx, code_http, xxxxxx, xxxxxx
+date, xxxxxxxx, content_type, content_name, streamer, bitrate_rx, rfgw_id, service_group, port_rfgw, ip_rfgw, client_id, carteId, date_end, sessionId, mode_rx, code_http, xxxxxx, xxxxxx
 
 Catchup:
 -------
 
 Catchup Sucess:
-date, date_start_video, content_type, content_name, streamer, bitrate_rx, service_group, port_rfgw, ip_rfgw, client_id, carteId, date_end, sessionId, mode_rx, code_http, xxxxxx, ondemand_session_id
+date, date_start_video, content_type, content_name, streamer, bitrate_rx, rfgw_id, service_group, port_rfgw, ip_rfgw, client_id, carteId, date_end, sessionId, mode_rx, code_http, xxxxxx, ondemand_session_id
 
 Errors 0c (File not Found) :
-date, xxxxxxxx, content_type, content_name, xxxxxxxx, xxxxxxxx, xxxxxxxx, xxxxxxxx, xxxxxxxx, xxxxxxxx, carteId, xxxxxxxx, xxxxxxxx, xxxxxxxx, code_http, xxxxxxxx, xxxxxxxx
+date, xxxxxxxx, content_type, content_name, xxxxxxxx, xxxxxxxx, xxxxxxxx, xxxxxxxx, xxxxxxxx, xxxxxxxx, xxxxxxxx, carteId, xxxxxxxx, xxxxxxxx, xxxxxxxx, code_http, xxxxxxxx, xxxxxxxx
 
 
 Rest of Errors 1c (bw (453 carte ..), ..) :
-date, xxxxxxxx, content_type, content_name, xxxxxxxx, xxxxxxxx, xxxxxxxx, xxxxxxxx, xxxxxxxx, xxxxxxxx, xxxxxxxx, xxxxxxxx, xxxxxxxx, xxxxxxxx, code_http, xxxxxxxx, xxxxxxxx
+date, xxxxxxxx, content_type, content_name, xxxxxxxx, xxxxxxxx, xxxxxxxx,xxxxxxxx, xxxxxxxx, xxxxxxxx, xxxxxxxx, xxxxxxxx, xxxxxxxx, xxxxxxxx, xxxxxxxx, code_http, xxxxxxxx, xxxxxxxx
 
 
 common 4 vod and catchup:
 ------------------------
 
 Errors (w/o bw) For both VoD and Catchup :
-date, xxxxxxxx, content_type, content_name, xxxxxxxx, xxxxxxxxxx, xxxxxxxxx, xxxxxxxxx, xxxxxxxxx, xxxxxxxxx, carteId, xxxxxxxxxx, xxxxxxxx, xxxxxxxx, code_http, x_srm_error_message, ondemand_session_id
+date, xxxxxxxx, content_type, content_name, xxxxxxxx, xxxxxxxxxx, xxxxxxxxx, xxxxxxxx, xxxxxxxxx, xxxxxxxxx, xxxxxxxxx, carteId, xxxxxxxxxx, xxxxxxxx, xxxxxxxx, code_http, x_srm_error_message, ondemand_session_id
 
+Dashboard2:
+----------------------------------------------------------------
+
+date, content_name, bitrate_rx
 
 bw-errors:
 ---------

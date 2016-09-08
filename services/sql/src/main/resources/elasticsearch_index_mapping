@@ -1,11 +1,12 @@
 {
   "mappings": {
-    "all": {
+    "success_errors": {
       "properties": {
-        "date": {
-          "type":   "date",
-          "format": "yyyy-MM-dd HH:mm:ss.SSSSSS"
-        },
+          "date": {
+              "type": "date",
+              "index":  "not_analyzed",
+              "null_value":  "null"
+          },
         "date_start_video": {
           "type":   "string",
           "index":  "not_analyzed",
@@ -90,3 +91,189 @@
     }
   }
 }
+
+---------------------
+
+2-Bytel:
+
+{
+  "mappings": {
+    "success_and_errors": {
+      "properties": {
+          "code_http": {
+              "type": "string",
+              "index":  "not_analyzed",
+              "null_value":  "null"
+          },
+          "content_type": {
+              "type": "string",
+              "index":  "not_analyzed",
+              "null_value":  "null"
+          },
+          "cseq": {
+              "type": "string",
+              "index":  "not_analyzed",
+              "null_value":  "null"
+          },
+          "date": {
+              "type": "date",
+              "index":  "not_analyzed",
+              "null_value":  "null"
+          },
+          "time_response": {
+              "type": "double",
+              "null_value":  "0"
+          }
+      }
+    }
+  }
+}
+
+------------------------------------------------------
+
+3-Canal:
+
+{
+  "mappings": {
+    "bw": {
+      "properties": {
+          "bitrate_rx": {
+            "type":   "long",
+            "index":  "not_analyzed",
+            "null_value":  "0"
+          },
+          "content_name": {
+            "type":   "string",
+            "index":  "not_analyzed",
+            "null_value":  "null"
+          },
+          "date": {
+              "type": "date",
+              "index":  "not_analyzed",
+              "null_value":  "null"
+          }
+      }
+    }
+  }
+}
+
+------------------------------------------------------
+
+4-Sdv:
+
+{
+  "mappings": {
+    "all": {
+      "properties": {
+          "date_start_reservation": {
+              "type": "date",
+              "index":  "not_analyzed",
+              "null_value":  "null"
+          },
+          "date_end_reservation": {
+              "type": "date",
+              "index":  "not_analyzed",
+              "null_value":  "null"
+          },
+          "date_utc_trigger_reservation": {
+              "type": "string",
+              "index":  "not_analyzed",
+              "null_value":  "null"
+          },
+          "rfgw": {
+            "type":   "string",
+            "index":  "not_analyzed",
+            "null_value":  "null"
+          },
+          "channel_number": {
+            "type":   "string",
+            "index":  "not_analyzed",
+            "null_value":  "null"
+          },
+          "service_group": {
+            "type":   "string",
+            "index":  "not_analyzed",
+            "null_value":  "null"
+          },
+          "carte_leader": {
+            "type":   "string",
+            "index":  "not_analyzed",
+            "null_value":  "null"
+          },
+          "carte_id": {
+            "type":   "string",
+            "index":  "not_analyzed",
+            "null_value":  "null"
+          }
+      }
+    }
+  }
+}
+------------------------------------------------------
+
+5-Bw-errors:
+
+{
+  "mappings": {
+    "not_enough_bandwidth": {
+      "properties": {
+          "date": {
+              "type": "date",
+              "index":  "not_analyzed",
+              "null_value":  "null"
+          },
+          "date_end_reservation": {
+              "type": "date",
+              "index":  "not_analyzed",
+              "null_value":  "null"
+          },
+          "date_up": {
+              "type": "date",
+              "index":  "not_analyzed",
+              "null_value":  "null"
+          },
+          "bitrate_rx": {
+            "type":   "string",
+            "index":  "not_analyzed",
+            "null_value":  "null"
+          },
+          "service_group": {
+            "type":   "string",
+            "index":  "not_analyzed",
+            "null_value":  "null"
+          },
+          "ip_rfgw": {
+            "type":   "string",
+            "index":  "not_analyzed",
+            "null_value":  "null"
+          },
+          "port_rfgw": {
+            "type":   "string",
+            "index":  "not_analyzed",
+            "null_value":  "null"
+          },
+          "rfgw_id": {
+            "type":   "string",
+            "index":  "not_analyzed",
+            "null_value":  "null"
+          },
+          "code_http": {
+            "type":   "string",
+            "index":  "not_analyzed",
+            "null_value":  "null"
+          },
+          "ondemand_session_id": {
+            "type":   "string",
+            "index":  "not_analyzed",
+            "null_value":  "null"
+          },
+          "bw_real_error": {
+            "type":   "string",
+            "index":  "not_analyzed",
+            "null_value":  "null"
+          }
+      }
+    }
+  }
+}
+

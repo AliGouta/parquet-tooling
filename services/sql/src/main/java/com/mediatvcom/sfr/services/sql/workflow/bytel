@@ -1,0 +1,10 @@
+         Dataset<Row> sqlDF = spark.sql("SELECT 1bytelsetup.date as date, 1bytelsetup.cseq, " +
+                 "1bytelsetup.content_type, 1bytelresponse.code_http, 1bytelresponse.x_srm_error_message, " +
+                 "( unix_timestamp(1bytelresponse.date, \"yyyy-MM-dd HH:mm:ss.SSSSSS\") - unix_timestamp(1bytelsetup.date, \"yyyy-MM-dd HH:mm:ss.SSSSSS\") ) as response_time_duration " +
+                 "From ( " +
+                    "SELECT trsetup.date as date, trsetup.cseq as cseq, trsetup.content_type as content_type " +
+                    "FROM  srmSetup1bytelModel trsetup " +
+                    "WHERE to_date(trsetup.date) = to_date( " + "\"" + dateRange.get(0) + "\"" + " ) " +
+                 ") 1bytelsetup " +
+                 "JOIN srmResponse1bytelModel 1bytelresponse " +
+                 "ON 1bytelresponse.cseq = 1bytelsetup.cseq ");
