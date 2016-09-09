@@ -33,6 +33,10 @@ public class SDV implements Serializable {
     private final SparkSession spark;
     List<String> dateRange;
 
+    private final String esNode;
+    private final String esPort;
+    private final String indexSdv;
+
     /*
     Models used by the VoD Workflow
      */
@@ -56,9 +60,13 @@ public class SDV implements Serializable {
      */
 
 
-    public SDV(SparkSession spark, String rootCsv, List<String> daterange) {
+    public SDV(SparkSession spark, String rootCsv, List<String> daterange, String esnode, String esport, String indexsdv) {
         this.spark = spark;
         this.dateRange = daterange;
+
+        this.esNode = esnode;
+        this.esPort = esport;
+        this.indexSdv = indexsdv;
 
         this.srmSessionStart1sModel = new SrmSessionStart1sModel(rootCsv);
         this.usrmVermserverRxModel = new UsrmVermserverRxModel(rootCsv);
@@ -195,16 +203,18 @@ public class SDV implements Serializable {
          sqlFinalSdvDF.printSchema();
 
          Map<String, String> cfg = new HashedMap();
-         cfg.put("es.nodes", "10.1.1.157");
-         cfg.put("es.port", "9200");
-         cfg.put("es.resource", "sdv/all");
+         cfg.put("es.nodes", esNode);
+         cfg.put("es.port", esPort);
+         cfg.put("es.resource", indexSdv);
          cfg.put("es.spark.dataframe.write.null", "true");
 
          JavaEsSparkSQL.saveToEs(sqlFinalSdvDF, cfg);
 
 
+         /*
          sqlFinalSdvDF.show();
          sqlFinalSdvDF.write().csv("C:\\temp\\result-sdv.csv");
+         */
 
 
      }

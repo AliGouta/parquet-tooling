@@ -22,8 +22,7 @@ import java.util.Map;
 import static org.apache.spark.sql.functions.callUDF;
 import static org.apache.spark.sql.functions.lit;
 
-//import org.elasticsearch.spark.sql.java.api.JavaEsSparkSQL;
-//java.api.JavaEsSpark SQL;
+
 
 /**
  * Created by AGOUTA on 22/08/2016.
@@ -32,6 +31,10 @@ public class Bytel implements Serializable {
 
     private final SparkSession spark;
     List<String> dateRange;
+
+    private final String esNode;
+    private final String esPort;
+    private final String indexBytel;
 
     /*
     Models used by the VoD Workflow
@@ -48,9 +51,13 @@ public class Bytel implements Serializable {
     Dataset<Row> df_srmResponse1bytelModel;
 
 
-    public Bytel(SparkSession spark, String rootCsv, List<String> daterange) {
+    public Bytel(SparkSession spark, String rootCsv, List<String> daterange, String esnode, String esport, String indexbytel) {
         this.spark = spark;
         this.dateRange = daterange;
+
+        this.esNode = esnode;
+        this.esPort = esport;
+        this.indexBytel = indexbytel;
 
         this.srmSetup1bytelModel = new SrmSetup1bytelModel(rootCsv);
         this.srmResponse1bytelModel = new SrmResponse1bytelModel(rootCsv);
@@ -102,10 +109,11 @@ public class Bytel implements Serializable {
                  "if (time_response IS NOT NULL, time_response, 0) as time_response " +
                  "FROM bytel_final ").repartition(1);
 
+
          Map<String, String> cfg = new HashedMap();
-         cfg.put("es.nodes", "10.1.1.157");
-         cfg.put("es.port", "9200");
-         cfg.put("es.resource", "bytel/success_and_errors");
+         cfg.put("es.nodes", esNode);
+         cfg.put("es.port", esPort);
+         cfg.put("es.resource", indexBytel);
          cfg.put("es.spark.dataframe.write.null", "true");
 
          JavaEsSparkSQL.saveToEs(sqlFinalBytel, cfg);
@@ -122,8 +130,10 @@ public class Bytel implements Serializable {
 
          sqlFinalBytel.printSchema();
 
+         /*
          sqlFinalBytel.show();
          sqlFinalBytel.write().csv("C:\\temp\\result-utc-bytel.csv");
+         */
 
 
      }

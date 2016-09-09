@@ -32,11 +32,31 @@ public class SparkSqlRunner {
     String dayTo="2016-07-09";
     @Parameter(names = "--src-path", description = "the root path where Csv files are located", required = true)
     String rootCsv = "C:\\Users\\agouta\\Desktop\\output.tar\\output";
+
     @Parameter(names = "--content-type", description = "Might be either vod, catch-up or Sdv", required = true)
-    String contentType = "bw-errors";
+    String contentType = "bytel";
+
+    @Parameter(names = "--es-node", description = "Elasticsearch node, may take either the FQDN or IP adress", required = true)
+    String esnode = "10.1.1.157";
+    @Parameter(names = "--es-port", description = "Elasticsearch port", required = true)
+    String esport = "9200";
+
+    @Parameter(names = "--vod-catchup-all-index-type", description = "Index/type of Vod and catchup all", required = true)
+    String index_vod_catchup_all = "vodcatchup/success_errors";
+
+    @Parameter(names = "--canal-index-type", description = "Index/type of Canal bandwidth estimation", required = true)
+    String index_type_canal = "canal/bw";
+
+    @Parameter(names = "--bw-errors-index-type", description = "Index/type of bandwidth errors", required = true)
+    String index_type_bw_errors = "bw_errors/not_enough_bandwidth";
+
+    @Parameter(names = "--bytel-index-type", description = "Index/type of bandwidth errors", required = true)
+    String index_type_bytel = "bytel/success_and_errors";
+
+    @Parameter(names = "--sdv-index-type", description = "Index/type of sdv sessions", required = true)
+    String index_type_sdv = "sdv/all";
 
     DateTimeFormatter formatter = DateTimeFormat.forPattern("yyyy-MM-dd");
-    //DateTimeFormatter dtfOut = DateTimeFormat.forPattern("MM/dd/yyyy");
 
     public static void main(String[] args) {
         System.out.println("Working directory = " + System.getProperty("user.dir"));
@@ -45,11 +65,10 @@ public class SparkSqlRunner {
     }
 
     private void start() {
-        
 
         SparkSession spark = sparkSessionBuilder();
 
-        List<String> dateRange = getDateRange(dayFrom, dayTo);
+        List<String> dateRange = getDateRange();
 
         if (contentType.equals("vod")){
             new VodWorkflow(spark, rootCsv, dateRange).runWorkflow();
@@ -58,35 +77,29 @@ public class SparkSqlRunner {
             new CatchupWorkflow(spark, rootCsv, dateRange).runWorkflow();
         }
         else if (contentType.equals("vodcatchupall")){
-            new NumericableVoDCatchup(spark, rootCsv, dateRange).runWorkflow();
+            new NumericableVoDCatchup(spark, rootCsv, dateRange, esnode, esport, index_vod_catchup_all, index_type_canal).runWorkflow();
         }
         else if (contentType.equals("bw-errors")){
-            new BwErrors(spark, rootCsv, dateRange).runWorkflow();
+            new BwErrors(spark, rootCsv, dateRange, esnode, esport, index_type_bw_errors).runWorkflow();
         }
         else if (contentType.equals("bytel")){
-            new Bytel(spark, rootCsv, dateRange).runWorkflow();
+            new Bytel(spark, rootCsv, dateRange, esnode, esport, index_type_bytel).runWorkflow();
         }
         else if (contentType.equals("sdv")){
-            new SDV(spark, rootCsv, dateRange).runWorkflow();
+            new SDV(spark, rootCsv, dateRange, esnode, esport, index_type_sdv).runWorkflow();
         }
 
-        //df.show();
     }
 
     private SparkSession sparkSessionBuilder() {
         return SparkSession.builder()
-                    .appName("CSV to Dataset")
-                    .master("local")
-                    .config("spark.executor.memory", "2g")
-                    .config("spark.driver.memory", "2g")
-                    .config("spark.sql.warehouse.dir", "file:///c:/tmp/spark-warehouse")
+                    .appName("SFR Dashboards")
                     .getOrCreate();
     }
 
-    public List<String> getDateRange(String dayfrom, String dayto){
+    public List<String> getDateRange(){
 
         List<String> dateRange = new ArrayList<>();
-        //List<Date> dates = new ArrayList<Date>();
         DateTime startDate = formatter.parseDateTime(dayFrom);
         DateTime endDate = formatter.parseDateTime(dayTo);
 

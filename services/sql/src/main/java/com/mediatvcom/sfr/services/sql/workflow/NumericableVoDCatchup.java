@@ -31,8 +31,10 @@ public class NumericableVoDCatchup implements Serializable {
     private String rootCsv;
     List<String> dateRange;
 
-
-
+    private final String esNode;
+    private final String esPort;
+    private final String indexVodCatchupAll;
+    private final String indexCanal;
 
     private final SrmGetContent0cModel srmGetContent0cModel;
     private final SrmPostContent1cModel srmPostContent1cModel;
@@ -74,9 +76,14 @@ public class NumericableVoDCatchup implements Serializable {
     Dataset<Row> df_usrmSnmpModel;
 
 
-    public NumericableVoDCatchup(SparkSession spark, String rootCsv, List<String> daterange) {
+    public NumericableVoDCatchup(SparkSession spark, String rootCsv, List<String> daterange, String esnode, String esport, String indexcatchupvodall, String indexcanal) {
         this.spark = spark;
         this.dateRange = daterange;
+
+        this.esNode = esnode;
+        this.esPort = esport;
+        this.indexVodCatchupAll = indexcatchupvodall;
+        this.indexCanal = indexcanal;
 
         this.srmGetContent0cModel = new SrmGetContent0cModel(rootCsv);
         this.srmPostContent1cModel = new SrmPostContent1cModel(rootCsv);
@@ -436,25 +443,27 @@ public class NumericableVoDCatchup implements Serializable {
 
 
         Map<String, String> cfg1 = new HashedMap();
-        cfg1.put("es.nodes", "10.1.1.157");
-        cfg1.put("es.port", "9200");
-        cfg1.put("es.resource", "vodcatchup/success_errors");
+        cfg1.put("es.nodes", esNode);
+        cfg1.put("es.port", esPort);
+        cfg1.put("es.resource", indexVodCatchupAll);
         cfg1.put("es.spark.dataframe.write.null", "true");
 
         Map<String, String> cfg2 = new HashedMap();
-        cfg2.put("es.nodes", "10.1.1.157");
-        cfg2.put("es.port", "9200");
-        cfg2.put("es.resource", "canal/bw");
+        cfg2.put("es.nodes", esNode);
+        cfg2.put("es.port", esPort);
+        cfg2.put("es.resource", indexCanal);
         cfg2.put("es.spark.dataframe.write.null", "true");
 
         JavaEsSparkSQL.saveToEs(sqlFinalVodCatchupAllDF, cfg1);
         JavaEsSparkSQL.saveToEs(sqlFinalCanalDF, cfg2);
 
+        /*
         sqlFinalVodCatchupAllDF.printSchema();
         sqlFinalVodCatchupAllDF.write().csv("C:\\temp\\result-all.csv");
 
         sqlFinalCanalDF.printSchema();
         sqlFinalCanalDF.write().csv("C:\\temp\\result-canal.csv");
+        */
 
     }
 

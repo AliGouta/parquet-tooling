@@ -30,6 +30,10 @@ public class BwErrors implements Serializable {
     private final SparkSession spark;
     List<String> dateRange;
 
+    private final String esNode;
+    private final String esPort;
+    private final String indexBwErrors;
+
     /*
     Models used by the VoD Workflow
      */
@@ -49,10 +53,13 @@ public class BwErrors implements Serializable {
     Dataset<Row> df_usrmSnmpModel;
 
 
-    public BwErrors(SparkSession spark, String rootCsv, List<String> daterange) {
+    public BwErrors(SparkSession spark, String rootCsv, List<String> daterange, String esnode, String esport, String indexbwerrors) {
         this.spark = spark;
         this.dateRange = daterange;
 
+        this.esNode = esnode;
+        this.esPort = esport;
+        this.indexBwErrors = indexbwerrors;
 
         this.usrmSnmpModel    = new UsrmSnmpModel(rootCsv);
         this.usrmTransformedSnmpModel = new UsrmTransformedSnmpModel(rootCsv);
@@ -124,16 +131,19 @@ public class BwErrors implements Serializable {
                  "if (bw_real_error IS NOT NULL, bw_real_error, \"null\") as bw_real_error  " +
                  "FROM bw_errors ").repartition(1);
 
+
          Map<String, String> cfg = new HashedMap();
-         cfg.put("es.nodes", "10.1.1.157");
-         cfg.put("es.port", "9200");
-         cfg.put("es.resource", "bw_errors/not_enough_bandwidth");
+         cfg.put("es.nodes", esNode);
+         cfg.put("es.port", esPort);
+         cfg.put("es.resource", indexBwErrors);
          cfg.put("es.spark.dataframe.write.null", "true");
 
          JavaEsSparkSQL.saveToEs(sqlFinalBwErrorsDF, cfg);
 
+         /*
          sqlFinalBwErrorsDF.show();
          sqlFinalBwErrorsDF.write().csv("C:\\temp\\result-bw-errors.csv");
+         */
 
      }
 
