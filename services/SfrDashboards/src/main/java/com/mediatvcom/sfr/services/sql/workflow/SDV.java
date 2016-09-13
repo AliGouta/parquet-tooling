@@ -1,8 +1,6 @@
 package com.mediatvcom.sfr.services.sql.workflow;
 
-import com.mediatvcom.sfr.services.sql.utils.models.srm.SrmResponse1bytelModel;
 import com.mediatvcom.sfr.services.sql.utils.models.srm.SrmSessionStart1sModel;
-import com.mediatvcom.sfr.services.sql.utils.models.srm.SrmSetup1bytelModel;
 import com.mediatvcom.sfr.services.sql.utils.models.srmconfig.ChannelBandwidth_override;
 import com.mediatvcom.sfr.services.sql.utils.models.srmconfig.ServiceGroup_override;
 import com.mediatvcom.sfr.services.sql.utils.models.usrm.UsrmVermserverRxModel;
@@ -22,8 +20,6 @@ import java.util.Map;
 
 import static org.apache.spark.sql.functions.callUDF;
 
-//import org.elasticsearch.spark.sql.java.api.JavaEsSparkSQL;
-//java.api.JavaEsSpark SQL;
 
 /**
  * Created by AGOUTA on 22/08/2016.
@@ -168,7 +164,8 @@ public class SDV implements Serializable {
          Dataset<Row> sqlfollowerDF = spark.sql("SELECT from_utc_timestamp(from_unixtime(unix_timestamp(leader.date_rx, \"yyyy-MM-dd HH:mm:ss.SSS\")), 'UTC') as date_start_reservation, " +
                  "from_utc_timestamp(from_unixtime(unix_timestamp(leader.date_endrx, \"yyyy-MM-dd HH:mm:ss.SSS\")), 'UTC') as date_end_reservation, " +
                  "leader.date_leader date_utc_trigger_reservation, " +
-                 "channel.qamname as rfgw, leader.channelnumber as channel_number, leader.service_group as service_group, leader.carte_leader as carte_leader, channel.carte_id as carte_id " +
+                 "channel.qamname as rfgw, leader.channelnumber as channel_number, leader.service_group as service_group, leader.carte_leader as carte_leader, " +
+                 "channel.carte_id as carte_id, channel.channel_name as channel_name " +
                  "FROM leader " +
                  "JOIN channel " +
                  "ON channel.sdv = leader.channelnumber and leader.service_group = channel.service_group and " +
@@ -185,7 +182,8 @@ public class SDV implements Serializable {
                  "if (channel_number IS NOT NULL, channel_number, 0) as channel_number, " +
                  "if (service_group IS NOT NULL, service_group, \"null\") as service_group,  " +
                  "if (carte_leader IS NOT NULL, carte_leader, \"null\") as carte_leader,  " +
-                 "if (carte_id IS NOT NULL, carte_id, \"null\") as carte_id " +
+                 "if (carte_id IS NOT NULL, carte_id, \"null\") as carte_id, " +
+                 "if (channel_name IS NOT NULL, channel_name, \"null\") as channel_name " +
                  "FROM sdv_final ").repartition(1);
 
          /*
@@ -225,7 +223,8 @@ public class SDV implements Serializable {
         
         if (model.equals("ChannelBandwidth_override") || model.equals("ServiceGroup_override")){
             files = new String[1];
-            files[0] = rootcsv + "\\output_logstash\\"+ logcomponent +"\\"+ model + "\\data.csv";
+            files[0] = rootcsv + "/output_logstash/"+ logcomponent +"/"+ model + "/data.csv";
+            //files[0] = rootcsv + "\\output_logstash\\"+ logcomponent +"\\"+ model + "\\data.csv";
         }
         else{
             files = getFilePaths(rootcsv, logcomponent, model, daterange);
@@ -246,7 +245,8 @@ public class SDV implements Serializable {
         String[] files = new String[ldays];
         int i=0;
         for (String day : daterange){
-            files[i] = rootcsv + "\\output_logstash\\"+ logcomponent +"\\"+ model + "\\" + day + "\\data.csv";
+            files[i] = rootcsv + "/output_logstash/"+ logcomponent +"/"+ model + "/" + day + "/data.csv";
+            //files[i] = rootcsv + "\\output_logstash\\"+ logcomponent +"\\"+ model + "\\" + day + "\\data.csv";
             i++;
         }
         return files;

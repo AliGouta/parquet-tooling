@@ -485,7 +485,8 @@ public class NumericableVoDCatchup implements Serializable {
         String[] files = new String[ldays];
         int i=0;
         for (String day : daterange){
-            files[i] = rootcsv + "\\output_logstash\\"+ logcomponent +"\\"+ model + "\\" + day + "\\data.csv";
+            files[i] = rootcsv + "/output_logstash/"+ logcomponent +"/"+ model + "/" + day + "/data.csv";
+            //files[i] = rootcsv + "\\output_logstash\\"+ logcomponent +"\\"+ model + "\\" + day + "\\data.csv";
             i++;
         }
         return files;

@@ -13,6 +13,28 @@
     <artifactId>component</artifactId>
     <packaging>pom</packaging>
 
+    <dependencies>
+        <dependency>
+            <groupId>com.twitter</groupId>
+            <artifactId>parquet-column</artifactId>
+            <version>1.6.0</version>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>joda-time</groupId>
+            <artifactId>joda-time</artifactId>
+            <version>2.9.4</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.twitter</groupId>
+            <artifactId>parquet-hadoop</artifactId>
+            <version>1.6.0</version>
+            <scope>provided</scope>
+        </dependency>
+    </dependencies>
+
     <modules>
         <module>converter</module>
     </modules>

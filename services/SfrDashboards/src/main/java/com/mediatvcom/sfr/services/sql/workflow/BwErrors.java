@@ -1,26 +1,19 @@
 package com.mediatvcom.sfr.services.sql.workflow;
 
-import com.mediatvcom.sfr.services.sql.utils.models.srm.*;
-import com.mediatvcom.sfr.services.sql.utils.models.streamer.StreamerModel;
 import com.mediatvcom.sfr.services.sql.utils.models.usrm.UsrmSnmpModel;
 import com.mediatvcom.sfr.services.sql.utils.models.usrm.UsrmTransformedSnmpModel;
 import com.mediatvcom.sfr.services.sql.utils.models.usrm.UsrmVermserverRxModel;
 import com.mediatvcom.sfr.services.sql.utils.models.usrm.UsrmVermserverTxModel;
-import com.mediatvcom.sfr.services.sql.utils.udfs.*;
 import org.apache.commons.collections.map.HashedMap;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SparkSession;
-import org.apache.spark.sql.types.DataTypes;
 import org.apache.spark.sql.types.StructType;
 import org.elasticsearch.spark.sql.api.java.JavaEsSparkSQL;
 
 import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
-
-import static org.apache.spark.sql.functions.callUDF;
-import static org.apache.spark.sql.functions.lit;
 
 /**
  * Created by AGOUTA on 22/08/2016.
@@ -165,7 +158,8 @@ public class BwErrors implements Serializable {
         String[] files = new String[ldays];
         int i=0;
         for (String day : daterange){
-            files[i] = rootcsv + "\\output_logstash\\"+ logcomponent +"\\"+ model + "\\" + day + "\\data.csv";
+            files[i] = rootcsv + "/output_logstash/"+ logcomponent +"/"+ model + "/" + day + "/data.csv";
+            //files[i] = rootcsv + "\\output_logstash\\"+ logcomponent +"\\"+ model + "\\" + day + "\\data.csv";
             i++;
         }
         return files;

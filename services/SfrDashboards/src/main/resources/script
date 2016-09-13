@@ -1,0 +1,14 @@
+###########
+Script to run in cluster mode:
+
+#!/bin/bash
+
+/usr/bin/spark-submit --class com.mediatvcom.sfr.services.sql.SparkSqlRunner \
+    --master yarn --deploy-mode client --executor-cores 2 --executor-memory 6g \
+    --num-executors 6 \
+    /home/hadoop/SfrDashboardsFactory-1.0-SNAPSHOT.jar \
+    --day-from 2016-07-08 --day-to 2016-07-09 --root-path s3n://data-sfr-normalized/datamodels \
+    --dashboard-type bytel --es-node 172.30.0.40 --es-port 9200 \
+    --vod-catchup-all-index-type vodcatchup/success_errors --canal-index-type canal/bw \
+    --bw-errors-index-type bw_errors/not_enough_bandwidth \
+    --bytel-index-type bytel/success_and_errors --sdv-index-type sdv/all

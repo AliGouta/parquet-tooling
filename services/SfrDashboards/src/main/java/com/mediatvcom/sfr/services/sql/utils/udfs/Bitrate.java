@@ -13,6 +13,12 @@ public class Bitrate implements UDF1<String, Long> {
 
     @Override
     public Long call(String s) {
-        return Long.valueOf(s);
+        //TODO: Need to find a better way to handle the null field
+        if (s == null){
+            return (long) 0;
+        }
+        else{
+            return Long.valueOf(s);
+        }
     }
 }

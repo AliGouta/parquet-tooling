@@ -1,5 +1,6 @@
 package com.mediatvcom.sfr.component.converter;
 
+import org.junit.Ignore;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
@@ -24,7 +25,7 @@ public class ConvertUtilsTest {
     private final static File output_f = new File(output_file);
     private final static File output_csv_f = new File(output_file_csv);
 
-    @Test
+    @Ignore
     public void test_convert_to_parquet() {
 
         System.setProperty("hadoop.home.dir", "C:\\hadoop\\");
@@ -34,7 +35,7 @@ public class ConvertUtilsTest {
     }
 
 
-    @Test
+    @Ignore
     public void test_convert_to_csv() {
 
         System.setProperty("hadoop.home.dir", "C:\\hadoop\\");

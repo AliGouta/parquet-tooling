@@ -1,6 +1,5 @@
 package com.mediatvcom.sfr.services.sql.workflow;
 
-import com.fasterxml.jackson.databind.util.ArrayIterator;
 import com.mediatvcom.sfr.services.sql.utils.models.srm.*;
 import com.mediatvcom.sfr.services.sql.utils.models.streamer.StreamerModel;
 import com.mediatvcom.sfr.services.sql.utils.models.usrm.UsrmSnmpModel;
@@ -8,35 +7,16 @@ import com.mediatvcom.sfr.services.sql.utils.models.usrm.UsrmTransformedSnmpMode
 import com.mediatvcom.sfr.services.sql.utils.models.usrm.UsrmVermserverRxModel;
 import com.mediatvcom.sfr.services.sql.utils.models.usrm.UsrmVermserverTxModel;
 import com.mediatvcom.sfr.services.sql.utils.udfs.*;
-import org.apache.commons.collections.iterators.ArrayListIterator;
 import org.apache.commons.collections.map.HashedMap;
-import org.apache.spark.api.java.JavaRDD;
-import org.apache.spark.api.java.function.FlatMapFunction;
-import org.apache.spark.api.java.function.Function;
-import org.apache.spark.api.java.function.VoidFunction;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
-import org.apache.spark.sql.RowFactory;
 import org.apache.spark.sql.SparkSession;
-import org.apache.spark.sql.api.java.UDF1;
-import org.apache.spark.sql.api.java.UDF3;
 import org.apache.spark.sql.types.DataTypes;
-import org.apache.spark.sql.types.StringType;
 import org.apache.spark.sql.types.StructType;
 
 import java.io.Serializable;
 import java.util.*;
 import org.elasticsearch.spark.sql.api.java.JavaEsSparkSQL;
-//import org.elasticsearch.spark.sql.java.api.JavaEsSparkSQL;
-//java.api.JavaEsSpark SQL;
-
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
-import scala.Tuple2;
-import scala.Tuple3;
-import scala.collection.Seq;
-import scala.tools.asm.Type;
 
 import static org.apache.spark.sql.functions.*;
 

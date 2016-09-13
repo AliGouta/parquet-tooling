@@ -1,11 +1,6 @@
 package com.mediatvcom.sfr.services.sql.workflow;
 
 import com.mediatvcom.sfr.services.sql.utils.models.srm.*;
-import com.mediatvcom.sfr.services.sql.utils.models.streamer.StreamerModel;
-import com.mediatvcom.sfr.services.sql.utils.models.usrm.UsrmSnmpModel;
-import com.mediatvcom.sfr.services.sql.utils.models.usrm.UsrmTransformedSnmpModel;
-import com.mediatvcom.sfr.services.sql.utils.models.usrm.UsrmVermserverRxModel;
-import com.mediatvcom.sfr.services.sql.utils.models.usrm.UsrmVermserverTxModel;
 import com.mediatvcom.sfr.services.sql.utils.udfs.*;
 import org.apache.commons.collections.map.HashedMap;
 import org.apache.spark.sql.Dataset;
@@ -20,8 +15,6 @@ import java.util.List;
 import java.util.Map;
 
 import static org.apache.spark.sql.functions.callUDF;
-import static org.apache.spark.sql.functions.lit;
-
 
 
 /**
@@ -89,7 +82,10 @@ public class Bytel implements Serializable {
                     "WHERE to_date(trsetup.date) = to_date( " + "\"" + dateRange.get(0) + "\"" + " ) " +
                  ") 1bytelsetup " +
                  "JOIN srmResponse1bytelModel 1bytelresponse " +
-                 "ON 1bytelresponse.cseq = 1bytelsetup.cseq ");
+                 "ON 1bytelresponse.cseq = 1bytelsetup.cseq " +
+                 "WHERE ( unix_timestamp(1bytelresponse.date, \"yyyy-MM-dd HH:mm:ss.SSS\") - unix_timestamp(1bytelsetup.date, \"yyyy-MM-dd HH:mm:ss.SSS\") ) < 120 and " +
+                 "( unix_timestamp(1bytelresponse.date, \"yyyy-MM-dd HH:mm:ss.SSS\") + 120 ) > unix_timestamp(1bytelsetup.date, \"yyyy-MM-dd HH:mm:ss.SSS\")  ");
+
 
          sqlDF = sqlDF.withColumn("time_response", callUDF("getTimePrecision", sqlDF.col("date_rep_seconds"), sqlDF.col("date_rep_micro"), sqlDF.col("date_setup_seconds"), sqlDF.col("date_setup_micro")));
          sqlDF.createOrReplaceTempView("bytel");
@@ -108,6 +104,7 @@ public class Bytel implements Serializable {
                  "if (x_srm_error_message IS NOT NULL, x_srm_error_message, \"null\") as x_srm_error_message, " +
                  "if (time_response IS NOT NULL, time_response, 0) as time_response " +
                  "FROM bytel_final ").repartition(1);
+
 
 
          Map<String, String> cfg = new HashedMap();
@@ -131,9 +128,10 @@ public class Bytel implements Serializable {
          sqlFinalBytel.printSchema();
 
          /*
+
          sqlFinalBytel.show();
          sqlFinalBytel.write().csv("C:\\temp\\result-utc-bytel.csv");
-         */
+*/
 
 
      }
@@ -157,7 +155,8 @@ public class Bytel implements Serializable {
         String[] files = new String[ldays];
         int i=0;
         for (String day : daterange){
-            files[i] = rootcsv + "\\output_logstash\\"+ logcomponent +"\\"+ model + "\\" + day + "\\data.csv";
+            //files[i] = rootcsv + "\\output_logstash\\"+ logcomponent +"\\"+ model + "\\" + day + "\\data.csv";
+            files[i] = rootcsv + "/output_logstash/"+ logcomponent +"/"+ model + "/" + day + "/data.csv";
             i++;
         }
         return files;

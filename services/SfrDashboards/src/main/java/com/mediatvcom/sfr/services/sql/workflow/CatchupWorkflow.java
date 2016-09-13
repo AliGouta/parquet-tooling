@@ -4,18 +4,14 @@ import com.mediatvcom.sfr.services.sql.utils.models.srm.*;
 import com.mediatvcom.sfr.services.sql.utils.models.usrm.UsrmVermserverRxModel;
 import com.mediatvcom.sfr.services.sql.utils.models.usrm.UsrmVermserverTxModel;
 import com.mediatvcom.sfr.services.sql.utils.udfs.*;
-import org.apache.spark.sql.Column;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SparkSession;
-import org.apache.spark.sql.api.java.UDF1;
-import org.apache.spark.sql.catalyst.expressions.Literal;
 import org.apache.spark.sql.types.DataTypes;
 import org.apache.spark.sql.types.StructType;
 
 import java.io.Serializable;
 import java.util.List;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import static org.apache.spark.sql.functions.*;

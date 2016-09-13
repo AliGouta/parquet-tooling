@@ -1,0 +1,304 @@
+curl -XDELETE 'http://localhost:9200/bytel/'
+
+curl -XPOST localhost:9200/bytel -d '{
+    "settings" : {
+        "number_of_shards" : 1
+    },
+      "mappings": {
+        "success_and_errors": {
+          "properties": {
+              "code_http": {
+                  "type": "string",
+                  "index":  "not_analyzed",
+                  "null_value":  "null"
+              },
+              "content_type": {
+                  "type": "string",
+                  "index":  "not_analyzed",
+                  "null_value":  "null"
+              },
+              "cseq": {
+                  "type": "string",
+                  "index":  "not_analyzed",
+                  "null_value":  "null"
+              },
+              "date": {
+                  "type": "date",
+                  "index":  "not_analyzed",
+                  "null_value":  "null"
+              },
+              "time_response": {
+                  "type": "double",
+                  "null_value":  "0"
+              }
+          }
+        }
+      }
+}'
+
+--------------------------------------
+
+curl -XDELETE 'http://localhost:9200/sdv/'
+
+curl -XPOST localhost:9200/sdv -d '{
+    "settings" : {
+        "number_of_shards" : 1
+    },
+  "mappings": {
+    "all": {
+      "properties": {
+          "date_start_reservation": {
+              "type": "date",
+              "index":  "not_analyzed",
+              "null_value":  "null"
+          },
+          "date_end_reservation": {
+              "type": "date",
+              "index":  "not_analyzed",
+              "null_value":  "null"
+          },
+          "date_utc_trigger_reservation": {
+              "type": "string",
+              "index":  "not_analyzed",
+              "null_value":  "null"
+          },
+          "rfgw": {
+            "type":   "string",
+            "index":  "not_analyzed",
+            "null_value":  "null"
+          },
+          "channel_number": {
+            "type":   "string",
+            "index":  "not_analyzed",
+            "null_value":  "null"
+          },
+          "channel_name": {
+            "type":   "string",
+            "index":  "not_analyzed",
+            "null_value":  "null"
+          },
+          "service_group": {
+            "type":   "string",
+            "index":  "not_analyzed",
+            "null_value":  "null"
+          },
+          "carte_leader": {
+            "type":   "string",
+            "index":  "not_analyzed",
+            "null_value":  "null"
+          },
+          "carte_id": {
+            "type":   "string",
+            "index":  "not_analyzed",
+            "null_value":  "null"
+          }
+      }
+    }
+  }
+}'
+
+--------------------------------------
+
+curl -XDELETE 'http://localhost:9200/vodcatchup'
+
+curl -XPOST localhost:9200/vodcatchup -d '{
+    "settings" : {
+        "number_of_shards" : 1
+    },
+  "mappings": {
+    "success_errors": {
+      "properties": {
+          "date": {
+              "type": "date",
+              "index":  "not_analyzed",
+              "null_value":  "null"
+          },
+        "date_start_video": {
+          "type":   "string",
+          "index":  "not_analyzed",
+          "null_value":  "null"
+        },
+        "content_type": {
+          "type":   "string",
+          "index":  "not_analyzed",
+          "null_value":  "null"
+        },
+        "content_name": {
+          "type":   "string",
+          "index":  "not_analyzed",
+          "null_value":  "null"
+        },
+        "streamer": {
+          "type":   "string",
+          "index":  "not_analyzed",
+          "null_value":  "null"
+        },
+        "bitrate_rx": {
+          "type":   "long",
+          "index":  "not_analyzed",
+          "null_value":  "0"
+        },
+        "service_group": {
+          "type":   "string",
+          "index":  "not_analyzed",
+          "null_value":  "null"
+        },
+        "port_rfgw": {
+          "type":   "string",
+          "index":  "not_analyzed",
+          "null_value":  "null"
+        },
+        "ip_rfgw": {
+          "type":   "string",
+          "index":  "not_analyzed",
+          "null_value":  "null"
+        },
+        "client_id": {
+          "type":   "string",
+          "index":  "not_analyzed",
+          "null_value":  "null"
+        },
+        "rfgw_id": {
+          "type":   "string",
+          "index":  "not_analyzed",
+          "null_value":  "null"
+        },
+        "carteId": {
+          "type":   "string",
+          "index":  "not_analyzed",
+          "null_value":  "null"
+        },
+        "date_end": {
+          "type":   "string",
+          "index":  "not_analyzed",
+          "null_value":  "null"
+        },
+        "sessionId": {
+          "type":   "string",
+          "index":  "not_analyzed",
+          "null_value":  "null"
+        },
+        "mode_rx": {
+          "type":   "string",
+          "index":  "not_analyzed",
+          "null_value":  "null"
+        },
+        "code_http": {
+          "type":   "string",
+          "index":  "not_analyzed",
+          "null_value":  "null"
+        },
+        "x_srm_error_message": {
+          "type":   "string",
+          "index":  "not_analyzed",
+          "null_value":  "null"
+        },
+        "ondemand_session_id": {
+          "type":   "string",
+          "index":  "not_analyzed",
+          "null_value":  "null"
+        }
+      }
+    }
+  }
+}'
+
+curl -XDELETE 'http://localhost:9200/canal'
+
+curl -XPOST localhost:9200/canal -d '{
+    "settings" : {
+        "number_of_shards" : 1
+    },
+  "mappings": {
+    "bw": {
+      "properties": {
+          "bitrate_rx": {
+            "type":   "long",
+            "index":  "not_analyzed",
+            "null_value":  "0"
+          },
+          "content_name": {
+            "type":   "string",
+            "index":  "not_analyzed",
+            "null_value":  "null"
+          },
+          "date": {
+              "type": "date",
+              "index":  "not_analyzed",
+              "null_value":  "null"
+          }
+      }
+    }
+  }
+}'
+
+--------------------------------------------------------
+
+curl -XDELETE 'http://localhost:9200/bw_errors'
+
+curl -XPOST localhost:9200/bw_errors -d '{
+    "settings" : {
+        "number_of_shards" : 1
+    },
+  "mappings": {
+    "not_enough_bandwidth": {
+      "properties": {
+          "date": {
+              "type": "date",
+              "index":  "not_analyzed",
+              "null_value":  "null"
+          },
+          "date_down": {
+              "type": "date",
+              "index":  "not_analyzed",
+              "null_value":  "null"
+          },
+          "date_up": {
+              "type": "date",
+              "index":  "not_analyzed",
+              "null_value":  "null"
+          },
+          "bitrate_rx": {
+            "type":   "string",
+            "index":  "not_analyzed",
+            "null_value":  "null"
+          },
+          "service_group": {
+            "type":   "string",
+            "index":  "not_analyzed",
+            "null_value":  "null"
+          },
+          "ip_rfgw": {
+            "type":   "string",
+            "index":  "not_analyzed",
+            "null_value":  "null"
+          },
+          "port_rfgw": {
+            "type":   "string",
+            "index":  "not_analyzed",
+            "null_value":  "null"
+          },
+          "rfgw_id": {
+            "type":   "string",
+            "index":  "not_analyzed",
+            "null_value":  "null"
+          },
+          "code_http": {
+            "type":   "string",
+            "index":  "not_analyzed",
+            "null_value":  "null"
+          },
+          "ondemand_session_id": {
+            "type":   "string",
+            "index":  "not_analyzed",
+            "null_value":  "null"
+          },
+          "bw_real_error": {
+            "type":   "string",
+            "index":  "not_analyzed",
+            "null_value":  "null"
+          }
+      }
+    }
+  }
+}'

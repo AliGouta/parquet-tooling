@@ -15,7 +15,7 @@
 
     <modules>
         <module>convert</module>
-        <module>sql</module>
+        <module>SfrDashboards</module>
     </modules>
 
 
