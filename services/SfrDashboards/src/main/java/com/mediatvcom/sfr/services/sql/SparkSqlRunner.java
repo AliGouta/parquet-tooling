@@ -28,7 +28,7 @@ import static org.apache.spark.sql.types.DataTypes.createStructField;
 public class SparkSqlRunner {
 
     @Parameter(names = "--day-from", description = "convert all Csv files to parquet files on day 'day'", required = false)
-    String dayFrom="2016-07-07";
+    String dayFrom="2016-07-08";
     @Parameter(names = "--day-to", description = "convert all Csv files to parquet files on day 'day'", required = false)
     String dayTo="2016-07-09";
     @Parameter(names = "--root-path", description = "the root path where Csv files are located", required = false)
