@@ -65,17 +65,17 @@ public class Bytel implements Serializable {
          df_srmResponse1bytelModel.createOrReplaceTempView("srmResponse1bytelModel");
 
          spark.udf().register("getTimePrecision", new BytelPrecision(), DataTypes.DoubleType);
+         spark.udf().register("getErrorCategory", new ErrorCategory(), DataTypes.StringType);
 
 
 
          //["date", "url", "cseq", "content_type", "ott_component"]
-
-         Dataset<Row> sqlDF = spark.sql("SELECT 1bytelsetup.date as date, 1bytelsetup.cseq as cseq, " +
+         Dataset<Row> sqlDF = spark.sql("SELECT Max(1bytelsetup.date) as date, 1bytelresponse.cseq as cseq, " +
                  "1bytelsetup.content_type as content_type, 1bytelresponse.code_http as code_http, 1bytelresponse.x_srm_error_message as x_srm_error_message, " +
                  "unix_timestamp(1bytelresponse.date, \"yyyy-MM-dd HH:mm:ss.SSS\") as date_rep_seconds, " +
                  "regexp_extract(1bytelresponse.date,\".+?(.)([0-9]{3})\",2) as date_rep_micro, " +
-                 "unix_timestamp(1bytelsetup.date, \"yyyy-MM-dd HH:mm:ss.SSS\") as date_setup_seconds, " +
-                 "regexp_extract(1bytelsetup.date,\".+?(.)([0-9]{3})\",2) as date_setup_micro " +
+                 "unix_timestamp(Max(1bytelsetup.date), \"yyyy-MM-dd HH:mm:ss.SSS\") as date_setup_seconds, " +
+                 "regexp_extract(Max(1bytelsetup.date),\".+?(.)([0-9]{3})\",2) as date_setup_micro " +
                  "From ( " +
                     "SELECT trsetup.date as date, trsetup.cseq as cseq, trsetup.content_type as content_type " +
                     "FROM  srmSetup1bytelModel trsetup " +
@@ -83,15 +83,16 @@ public class Bytel implements Serializable {
                  ") 1bytelsetup " +
                  "JOIN srmResponse1bytelModel 1bytelresponse " +
                  "ON 1bytelresponse.cseq = 1bytelsetup.cseq " +
-                 "WHERE ( unix_timestamp(1bytelresponse.date, \"yyyy-MM-dd HH:mm:ss.SSS\") - unix_timestamp(1bytelsetup.date, \"yyyy-MM-dd HH:mm:ss.SSS\") ) < 120 and " +
-                 "( unix_timestamp(1bytelresponse.date, \"yyyy-MM-dd HH:mm:ss.SSS\") + 120 ) > unix_timestamp(1bytelsetup.date, \"yyyy-MM-dd HH:mm:ss.SSS\")  ");
-
+                 "and ( unix_timestamp(1bytelresponse.date, \"yyyy-MM-dd HH:mm:ss.SSS\") + 1 ) >= unix_timestamp(1bytelsetup.date, \"yyyy-MM-dd HH:mm:ss.SSS\" ) " +
+                 "WHERE to_date(1bytelresponse.date) = to_date( " + "\"" + dateRange.get(0) + "\"" + " ) " +
+                 "GROUP BY 1bytelresponse.date, 1bytelresponse.cseq, 1bytelsetup.content_type, 1bytelresponse.code_http, 1bytelresponse.x_srm_error_message ");
 
          sqlDF = sqlDF.withColumn("time_response", callUDF("getTimePrecision", sqlDF.col("date_rep_seconds"), sqlDF.col("date_rep_micro"), sqlDF.col("date_setup_seconds"), sqlDF.col("date_setup_micro")));
+         sqlDF = sqlDF.withColumn("error_category", callUDF("getErrorCategory", sqlDF.col("x_srm_error_message")));
          sqlDF.createOrReplaceTempView("bytel");
 
          Dataset<Row> sqlBytel = spark.sql(" SELECT from_utc_timestamp(from_unixtime(unix_timestamp(date, \"yyyy-MM-dd HH:mm:ss.SSS\")), 'Europe/Paris') as date, " +
-                 "cseq, content_type, code_http, x_srm_error_message, time_response " +
+                 "cseq, content_type, code_http, x_srm_error_message, time_response, error_category " +
                  "FROM bytel ").cache();
 
          sqlBytel.createOrReplaceTempView("bytel_final");
@@ -102,9 +103,9 @@ public class Bytel implements Serializable {
                  "if (content_type IS NOT NULL, content_type, \"null\") as content_type, " +
                  "if (code_http IS NOT NULL, code_http, \"null\") as code_http, " +
                  "if (x_srm_error_message IS NOT NULL, x_srm_error_message, \"null\") as x_srm_error_message, " +
-                 "if (time_response IS NOT NULL, time_response, 0) as time_response " +
+                 "if (time_response IS NOT NULL, time_response, 0) as time_response, " +
+                 "if (error_category IS NOT NULL, error_category, \"null\") as error_category " +
                  "FROM bytel_final ").repartition(1);
-
 
 
          Map<String, String> cfg = new HashedMap();
@@ -114,6 +115,7 @@ public class Bytel implements Serializable {
          cfg.put("es.spark.dataframe.write.null", "true");
 
          JavaEsSparkSQL.saveToEs(sqlFinalBytel, cfg);
+
 
          /*
         root
@@ -127,11 +129,12 @@ public class Bytel implements Serializable {
 
          sqlFinalBytel.printSchema();
 
-         /*
 
-         sqlFinalBytel.show();
-         sqlFinalBytel.write().csv("C:\\temp\\result-utc-bytel.csv");
-*/
+         String destS3 = "s3n://data-sfr-transformed/byteltest2/"  + dateRange.get(0) +  "/data";
+
+         sqlDF.show();
+         sqlDF.coalesce(1).write().mode("overwrite").csv(destS3);
+
 
 
      }

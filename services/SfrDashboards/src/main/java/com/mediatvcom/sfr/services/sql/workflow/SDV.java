@@ -169,8 +169,8 @@ public class SDV implements Serializable {
                  "FROM leader " +
                  "JOIN channel " +
                  "ON channel.sdv = leader.channelnumber and leader.service_group = channel.service_group and " +
-                 "( unix_timestamp(channel.date_channel, \"yyyy-MM-dd HH:mm:ss.SSSSSS\") + 7200 ) >= unix_timestamp(leader.date_rx, \"yyyy-MM-dd HH:mm:ss.SSS\") and " +
-                 "( unix_timestamp(channel.date_channel, \"yyyy-MM-dd HH:mm:ss.SSSSSS\") + 7200 ) < unix_timestamp(leader.date_endrx, \"yyyy-MM-dd HH:mm:ss.SSS\") ").cache();
+                 "( unix_timestamp(channel.date_channel, \"yyyy-MM-dd HH:mm:ss.SSS\") + 7200 ) >= unix_timestamp(leader.date_rx, \"yyyy-MM-dd HH:mm:ss.SSS\") and " +
+                 "( unix_timestamp(channel.date_channel, \"yyyy-MM-dd HH:mm:ss.SSS\") + 7200 ) < unix_timestamp(leader.date_endrx, \"yyyy-MM-dd HH:mm:ss.SSS\") ").cache();
 
          sqlfollowerDF.createOrReplaceTempView("sdv_final");
 

@@ -35,7 +35,7 @@ public class SparkSqlRunner {
     String rootCsv = "C:\\Users\\agouta\\Desktop\\output.tar\\output";
 
     @Parameter(names = "--dashboard-type", description = "Might be either vod, catch-up or Sdv", required = false)
-    String contentType = "vodcatchupall";
+    String contentType = "bytel";
 
     @Parameter(names = "--es-node", description = "Elasticsearch node, may take either the FQDN or IP adress", required = false)
     String esnode = "10.1.1.157";
