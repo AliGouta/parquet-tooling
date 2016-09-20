@@ -34,6 +34,7 @@ public class ErrorCategory implements UDF1<String, String> {
     Pattern patternError21 = Pattern.compile("((.+?)|^)Too many active requ(.*)");
     Pattern patternError22 = Pattern.compile("((.+?)|^)Unexpected RuntimeEx(.*)");
     Pattern patternError23 = Pattern.compile("((.+?)|^)Unknown Error Descri(.*)");
+    Pattern patternError24 = Pattern.compile("((.+?)|^)MasterSession not found for UUID(.*)");
 
     @Override
     public String call(String s) {
@@ -44,6 +45,9 @@ public class ErrorCategory implements UDF1<String, String> {
             }
             else if (patternError1.matcher(s).matches()){
                 return "Associated account i";
+            }
+            else if (patternError24.matcher(s).matches()){
+                return "MasterSession not fo";
             }
             else if (patternError2.matcher(s).matches()){
                 return "Asset definition or";

@@ -145,6 +145,7 @@ public class NumericableVoDCatchup implements Serializable {
         spark.udf().register("getContentNameOnSetup", new ContentNameOnSetup(), DataTypes.StringType);
         spark.udf().register("getCarteOnSetup", new CarteOnSetup(), DataTypes.StringType);
         spark.udf().register("getBitrate", new Bitrate(), DataTypes.LongType);
+        spark.udf().register("getErrorCategory", new ErrorCategory(), DataTypes.StringType);
 
         df_srmGetContent0cModel = df_srmGetContent0cModel.withColumn("content_name", callUDF("getContentNameOnGet", df_srmGetContent0cModel.col("url")));
         df_srmGetContent0cModel = df_srmGetContent0cModel.withColumn("carteId", callUDF("getCarteOnGet", df_srmGetContent0cModel.col("url")));
@@ -172,7 +173,7 @@ public class NumericableVoDCatchup implements Serializable {
         df_srmTunningStartSession4v6v4s6cModel = df_srmTunningStartSession4v6v4s6cModel.withColumn("content_name", callUDF("getContentNameOnSetupOn4vError", df_srmTunningStartSession4v6v4s6cModel.col("url")));
         df_srmTunningStartSession4v6v4s6cModel.createOrReplaceTempView("srmTunningStartSession4V6v6S6CModel");
 
-        SnmpTransfrom snmpTransfrom = new SnmpTransfrom(df_usrmSnmpModel);
+        //SnmpTransfrom snmpTransfrom = new SnmpTransfrom(df_usrmSnmpModel);
 
 
          /*
@@ -354,7 +355,9 @@ public class NumericableVoDCatchup implements Serializable {
 
         sqlcatchupDF.createOrReplaceTempView("cathup_success_session");
 
-        Dataset<Row> sqlallDF = spark.sql("SELECT catchupok.date_rx as date, 4c.date as date_start_video, content_type_8c as content_type, content_name as content_name, " +
+        Dataset<Row> sqlallDF = spark.sql("SELECT catchupok.date_rx as date, " +
+                "if (4c.date is not NULL, from_utc_timestamp(from_unixtime(unix_timestamp(4c.date, \"yyyy-MM-dd HH:mm:ss.SSS\")), 'Europe/Paris'), NULL) as date_start_video, " +
+                "content_type_8c as content_type, content_name as content_name, " +
                 "if (content_name rlike 'PUB.*', \"true\", \"false\" ) as is_pub, " +
                 "NULL as streamer, " +
                 "catchupok.bitrate_rx as bitrate_rx, catchupok.rfgw_id as rfgw_id, catchupok.service_group_rx as service_group, " +
@@ -380,6 +383,7 @@ public class NumericableVoDCatchup implements Serializable {
                 "FROM vod_catchup_error ").cache();
 
         sqlallDF = sqlallDF.withColumn("bitrate_long_rx", callUDF("getBitrate", sqlallDF.col("bitrate_rx")));
+        sqlallDF = sqlallDF.withColumn("error_category", callUDF("getErrorCategory", sqlallDF.col("x_srm_error_message")));
         sqlallDF.createOrReplaceTempView("all_vod_catchup");
 
 
@@ -417,7 +421,8 @@ public class NumericableVoDCatchup implements Serializable {
                 "if (mode_rx IS NOT NULL, mode_rx, \"null\") as mode_rx, " +
                 "if (code_http IS NOT NULL, code_http, \"null\") as code_http, " +
                 "if (x_srm_error_message IS NOT NULL, x_srm_error_message, \"null\") as x_srm_error_message, " +
-                "if (ondemand_session_id IS NOT NULL, ondemand_session_id, \"null\") as ondemand_session_id " +
+                "if (ondemand_session_id IS NOT NULL, ondemand_session_id, \"null\") as ondemand_session_id, " +
+                "if (error_category IS NOT NULL, error_category, \"null\") as error_category " +
                 "FROM all_vod_catchup ").repartition(1);
 
 

@@ -96,6 +96,11 @@
           "type":   "string",
           "index":  "not_analyzed",
           "null_value":  "null"
+        },
+        "error_category": {
+            "type": "string",
+            "index":  "not_analyzed",
+            "null_value":  "null"
         }
       }
     }
@@ -158,6 +163,16 @@
             "null_value":  "0"
           },
           "content_name": {
+            "type":   "string",
+            "index":  "not_analyzed",
+            "null_value":  "null"
+          },
+          "content_type": {
+            "type":   "string",
+            "index":  "not_analyzed",
+            "null_value":  "null"
+          },
+          "date_end": {
             "type":   "string",
             "index":  "not_analyzed",
             "null_value":  "null"
